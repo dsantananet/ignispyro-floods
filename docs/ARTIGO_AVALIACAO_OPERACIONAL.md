@@ -70,3 +70,10 @@ O código tools/coimbra-analysis.R executa com R de base, sem pacotes adicionais
 - pgri: https://apambiente.pt/sites/default/files/_SNIAMB_Agua/DRH/PlaneamentoOrdenamento/PGRI/2022-2027/2_fase/Relatorio_1.pdf
 - Formulação de descarga: https://www.hec.usace.army.mil/confluence/hmsdocs/hmstrm/reservoir-modeling/reservoir-modeling-concepts-and-equations/spillways
 - R Core Team. R: A Language and Environment for Statistical Computing. https://www.r-project.org/
+
+
+## Adenda: confronto espacial histórico de 2019
+
+O produto independente Copernicus EMSR417 (Sentinel-1A, 23/12/2019 06:43 UTC) foi cruzado com reconstituições exploratórias do piloto. Após retirar água permanente e o canal assumido, o recorte observado mede 10,62 ha vetoriais (10,80 ha na grelha de 30 m). O cenário com o caudal médio diário do dia da imagem produz 2,16 ha no domínio comparável, sem interseção; o maior caudal médio diário do evento também não reproduz a área observada. A tolerância de 60 m não resolve a discrepância. O máximo do evento e a imagem não são simultâneos; as entradas diárias, as estruturas e a memória da planície não permitem uma validação operacional. A ausência de deteção SAR não prova terreno seco. Em 2001 e 2016, não há manchas independentes importadas com hora para atribuir métricas espaciais.
+
+As interseções SAR nas freguesias e as estimativas BGRI2021 são exposição retrospectiva aproximada, não pessoas atingidas em 2019. O modelo permanece sem aceitação espacial. Métodos, gráficos, limites populacionais e dados em falta: https://dsantananet.github.io/ignispyro-floods/validation.html . Referência independente: https://mapping.emergency.copernicus.eu/activations/EMSR417/ALL/ .

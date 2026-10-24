@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'tools/coimbra-analysis.R'
+      - 'tools/coimbra-validation.R'
+      - 'dist/analysis/coimbra-historical-comparison.csv'
       - 'dist/data/coimbra-weir-daily.csv'
       - '.github/workflows/r-analysis.yml'
 permissions:
@@ -20,7 +22,7 @@ jobs:
           r-version: '4.6.1'
           use-public-rspm: true
       - name: Execute the published analysis, without external R packages
-        run: Rscript --vanilla tools/coimbra-analysis.R
+        run: Rscript --vanilla tools/coimbra-analysis.R && Rscript --vanilla tools/coimbra-validation.R
       - name: Verify coefficient and keep operational gate closed
         run: Rscript --vanilla -e 'x<-read.csv("dist/analysis/weir-fit-metrics.csv");stopifnot(abs(x$coefficient_m05_s-1.49994175883654)<1e-8,!x$operational_accepted,x$validation_inrange_days==1,x$validation_extrapolated_days==1)'
       - uses: actions/upload-artifact@v4
@@ -32,3 +34,4 @@ jobs:
             dist/figures/10_r_descarga.png
             dist/figures/11_r_residuos.png
             dist/figures/12_r_perfil_projeto.png
+            dist/figures/14_validacao_R.png

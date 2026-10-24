@@ -63,3 +63,20 @@ A API pública Open-Meteo destina-se a utilização não comercial; utilização
 [Relatório e análise em R](https://dsantananet.github.io/ignispyro-floods/operational-review.html) · [Artigo](https://dsantananet.github.io/ignispyro-floods/article.html). Ver docs/ARTIGO_AVALIACAO_OPERACIONAL.md. Arquivo adicional Açude-Ponte1987–2025, peças DWF históricas e perfil de projeto2010 localizados. Ajuste preliminar de descarga com cinco dias de treino e dois de confronto, um fora do domínio. NÃO valida a mancha operacional.
 
 Reproduzir: `node tools/export-r.cjs`; `Rscript --vanilla tools/coimbra-analysis.R`; `node tools/package-review.cjs`; `node tools/review-document.cjs`. R de base, sem pacotes adicionais. O CI R reproduz a análise em cada alteração relevante; o cálculo histórico não é reajustado a cada15min. Descargas reais alimentam tools/coimbra-boundaries.py e o pacote de fronteiras/continuidade; a assimilação espacial fica bloqueada até validação.
+# Confronto histórico de Coimbra — 24/10/2026
+
+Resultados e dados em falta: [validation.html](https://dsantananet.github.io/ignispyro-floods/validation.html).
+EMSR417 fornece uma observação SAR de 23/12/2019 06:43 UTC. As reconstituições com caudais médios diários de 2001, 2016 e 2019 são cenários exploratórios: o piloto **não obteve aceitação espacial**. As métricas de 2019 são diagnósticas e assíncronas; ausência SAR não confirma terreno seco. A população BGRI2021 representa exposição estimada, não pessoas atingidas em 2019.
+
+Reprodução na raiz (dependências hidráulicas do projeto e matplotlib; o cache BGRI é preparado por `engine/run.py`):
+
+```text
+node --use-system-ca tools/fetch-validation.cjs
+python -m zipfile -e research/emsr417-vector.zip research/emsr417
+python tools/validate-coimbra.py
+Rscript --vanilla tools/coimbra-validation.R
+python tools/validation-document.py
+```
+
+O ZIP oficial é verificado por SHA256 antes da extração. A análise histórica fica congelada e não integra o ciclo de telemetria de 15 minutos. Código R apenas com bibliotecas base; métricas, GeoJSON e gráficos publicados em `dist/`. Testes mantêm bloqueada a aceitação operacional e proíbem inventar métricas para eventos sem mancha observada.
+
