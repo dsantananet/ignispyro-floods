@@ -1,0 +1,17 @@
+{
+  "risk20.geojson": {
+    "input": 231,
+    "areal_features": 230,
+    "collapsed_non_areal_removed": 1
+  },
+  "risk.geojson": {
+    "input": 286,
+    "areal_features": 286,
+    "collapsed_non_areal_removed": 0
+  },
+  "risk1000.geojson": {
+    "input": 233,
+    "areal_features": 232,
+    "collapsed_non_areal_removed": 1
+  }
+}
