@@ -147,3 +147,7 @@ Resolução regional da precipitação; cobertura desigual de estações; chuva 
 13. ARBCAS. Situação de armazenamento. https://pagina.arbcas.pt/
 
 Antes de submissão: completar revisão bibliográfica académica, dados hidrométricos, protocolo registado, validação e declarações de dados/licenças/conflitos de interesse. Não submeter este rascunho como estudo validado.
+
+## Atualização 24/10/2026 — piloto hidráulico executável
+O piloto de Coimbra já calcula caudal propagado, nível em secções derivadas do DSM, mancha ligada ao rio limitada pelo volume disponível e exposição BGRI. Ver [método, resultados e limites](PILOTO_HIDRAULICO_COIMBRA.md). É uma estimativa experimental, sem calibração, separada da publicação de risco operacional validado. Os parágrafos anteriores sobre hidráulica pendente referem-se à validação e expansão nacional, não à ausência deste piloto.
+

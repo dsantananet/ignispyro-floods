@@ -1,0 +1,37 @@
+{
+  "source": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N40_00_W009_00_DEM/Copernicus_DSM_COG_10_N40_00_W009_00_DEM.tif",
+  "terrain": "Copernicus GLO-30 DSM \u00b7 N40 W009",
+  "vertical_datum": "EGM2008, source DSM; not reconciled with SNIRH local gauge datum",
+  "horizontal_crs": "EPSG:3763",
+  "grid_m": 30,
+  "shape": [
+    384,
+    457
+  ],
+  "reach_length_m": 16044.05398458089,
+  "apa_reach_ids": [
+    39201,
+    39231,
+    39284,
+    39298,
+    39435,
+    39564,
+    39631,
+    39593,
+    39514,
+    39389,
+    39291,
+    39289,
+    39117,
+    38967,
+    38947,
+    38938,
+    38975,
+    39274
+  ],
+  "cross_sections": 161,
+  "section_half_width_m": 1200,
+  "normal_flow_slope": 0.0008247427047738715,
+  "bed_incision_estimated_m": 2,
+  "note": "DSM-derived sections with assumed incised channel; not bathymetric survey. Source stored locally; this is a derived pilot crop."
+}

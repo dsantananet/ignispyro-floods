@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-D=pathlib.Path('dist/data');h=json.loads((D/'history.json').read_text());q=json.loads((D/'t10.json').read_text());nodes=json.loads((D/'history-nodes.json').read_text());dates=nodes['dates']
+D=pathlib.Path('dist/data');h=json.loads((D/'history.json').read_text(encoding='utf-8-sig'));q=json.loads((D/'t10.json').read_text(encoding='utf-8-sig'));nodes=json.loads((D/'history-nodes.json').read_text(encoding='utf-8-sig'));dates=nodes['dates']
 plt.rcParams.update({'font.family':'DejaVu Sans','font.size':10,'axes.spines.top':False,'axes.spines.right':False})
 fig,ax=plt.subplots(1,2,figsize=(12,5));years=list(range(2016,2026));annual=[]
 for y in years:

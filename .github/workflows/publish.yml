@@ -43,7 +43,18 @@ jobs:
       - name: Model estimates for rainfall gaps
         run: node tools/estimates.cjs
       - name: Automatic runoff sensitivity
-        run: node tools/simulate.cjs && node tools/compress.cjs
+        run: node tools/simulate.cjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install hydraulic dependencies
+        run: pip install numpy==2.5.4 shapely==2.2.0 rasterio==1.5.2 pyproj==3.8.0
+      - uses: actions/cache@v4
+        with:
+          path: .cache/bgri-coimbra.geojson
+          key: floods-bgri-coimbra-2021-v1
+      - name: Verify and calculate experimental Coimbra hydraulics
+        run: python -m unittest discover -s engine -p 'test_*.py' && python engine/run.py && node tools/compress.cjs
       - name: Preserve dated evidence
         uses: actions/upload-artifact@v4
         with:
@@ -55,6 +66,7 @@ jobs:
             dist/data/simulation.json
             dist/data/rainfall-estimates.json
             dist/data/status.json
+            dist/data/hydraulic-*
           retention-days: 30
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

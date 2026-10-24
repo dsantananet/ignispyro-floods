@@ -1,0 +1,21 @@
+import sys,pathlib,json
+sys.path.insert(0,str(pathlib.Path('research/python').resolve()))
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
+root=pathlib.Path('.');data=root/'dist/data';j=json.loads((data/'hydraulic-pilot.json').read_text(encoding='utf-8'));fc=json.loads((data/'hydraulic-q10.geojson').read_text(encoding='utf-8'))
+fig,ax=plt.subplots(figsize=(10,5));colors=['#e7cd73','#e5a84c','#e28143','#ce504d','#973b62']
+for f in fc['features']:
+ g=f['geometry'];polys=g['coordinates'] if g['type']=='MultiPolygon' else [g['coordinates']]
+ for p in polys:ax.add_patch(Polygon(p[0],facecolor=colors[f['properties']['hazard_class']-1],alpha=.8,lw=0))
+ax.set(xlim=(-8.49,-8.36),ylim=(40.17,40.25),xlabel='Longitude',ylabel='Latitude',title='Coimbra · mancha estimada para Q10 diário mantido 6 h');ax.set_aspect(1.31);ax.grid(alpha=.15)
+fig.text(.08,.01,'Modelo experimental: DSM 30 m, canal assumido. Não é cartografia T10 validada nem cheia atual.',fontsize=9)
+fig.savefig('dist/figures/07_hidraulica_coimbra.png',dpi=160,bbox_inches='tight');plt.close(fig)
+c=j['current'];q=j['q10_six_hour_sensitivity']
+section=f'''<section id="hydraulic-pilot"><h2>Piloto hidráulico experimental · Mondego / Coimbra</h2><p>Calculado em {j['computed_at']}. Caudal de modelo GloFAS diário, propagado à hora: <b>{c['discharge_m3s']:.2f} m³/s</b>. Nível de referência estimado: <b>{c['reference_water_level_m_egm2008']:.2f} m EGM2008</b>; mancha fora do canal assumido: {c['overbank_area_m2']/10000:.2f} ha; freguesias intersectadas: {j['affected_parishes_count']}.</p><p>Troço APA de 16,04 km; 161 secções derivadas do Copernicus GLO-30, grelha 30 m em EPSG:3763. Canal assumido de 150 m e incisão de 2 m; Manning 0,04/0,08. Solução de escoamento uniforme por secção, interpolação espacial e ligação ao rio por vizinhança. A mancha fica limitada por um volume máximo acumulado de transbordo. Esta restrição não constitui uma solução dinâmica conservativa da planície.</p><p>Hipótese Q10 diário {q['discharge_m3s']:.2f} m³/s durante 6 h: {q['overbank_area_m2']/10000:.2f} ha, {q['intersected_parishes']} freguesias, {q['exposed_residents_estimate']:.2f} residentes expostos estimados, {q['exposed_children_estimate']:.2f} crianças e {q['exposed_elderly_estimate']:.2f} idosos. Distribuição uniforme por área BGRI2021: frações são estimativas, não pessoas presentes.</p><img src="figures/07_hidraulica_coimbra.png" alt="Mancha hidráulica experimental de Coimbra para Q10 diário"><p class="note">Não calibrado. Q10 é máximo médio diário ajustado a apenas dez anos, não pico instantâneo nem mancha T10 oficial. A largura do canal é assumida e pode confundir água permanente com transbordo. Faltam batimetria, cotas reconciliadas, operação do açude, pontes, diques, descargas de barragens e níveis observados. Fora do piloto, a situação hidráulica continua desconhecida.</p><p>O diferencial de escoamento CN75 IPMA/ECMWF da bacia local #208149 corrige exploratoriamente o caudal com peso 0,5; não soma novamente todo o volume a GloFAS. Não é assimilação calibrada. Consequências: &lt;1, 1–10, &gt;10–100, &gt;100–1000 e &gt;1000 residentes estimados; combinação experimental com intensidade RI=d(v+0,5). Não é matriz oficial.</p><p>Fontes: <a href="https://open-meteo.com/en/docs/flood-api">GloFAS via Open-Meteo</a>; <a href="https://registry.opendata.aws/copernicus-dem/">Copernicus DEM</a>; APA rede hidrográfica; DGT/CAOP2025; INE/BGRI2021. Dados e hipóteses completos: <a href="data/hydraulic-pilot.json">resultado JSON</a>.</p></section>'''
+p=root/'dist/report.html';text=p.read_text(encoding='utf-8');start=text.find('<section id="hydraulic-pilot">')
+if start>=0:text=text[:start]+text[text.index('</section>',start)+10:]
+text=text.replace('</body>',section+'</body>') if '</body>' in text else text+section
+p.write_text(text,encoding='utf-8')
+doc=root/'docs/PILOTO_HIDRAULICO_COIMBRA.md';doc.write_text('# Piloto hidráulico experimental — Coimbra\n\n'+section+'\n\nReprodução: `python engine/run.py`; testes: `python -m unittest discover -s engine`. O terreno preparado está em engine/terrain; preparação original: engine/prepare.py.\n',encoding='utf-8')
