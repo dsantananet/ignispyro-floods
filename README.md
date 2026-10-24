@@ -79,4 +79,3 @@ python tools/validation-document.py
 ```
 
 O ZIP oficial é verificado por SHA256 antes da extração. A análise histórica fica congelada e não integra o ciclo de telemetria de 15 minutos. Código R apenas com bibliotecas base; métricas, GeoJSON e gráficos publicados em `dist/`. Testes mantêm bloqueada a aceitação operacional e proíbem inventar métricas para eventos sem mancha observada.
-
