@@ -1,0 +1,14 @@
+const fs=require('node:fs/promises'),crypto=require('node:crypto');
+const root='https://snirh.apambiente.pt/snirh/_dadosbase/site/',station='1627759222';
+function plain(s){return s.replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();}
+function parse(html){let out=[];for(let m of html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)){let c=[...m[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map(x=>x[1]);if(c.length!==3||!/^\d{2}\/\d{2}\/\d{4} /.test(plain(c[0])))continue;let d=plain(c[0]).slice(0,10).split('/').reverse().join('-'),values=c.slice(1).map(x=>{let v=plain(x);return /^-?\d+(?:[.,]\d+)?$/.test(v)?Number(v.replace(',','.')):null;});out.push({date:d,level_daily_m:values[0],flow_daily_m3s:values[1],flags_present:c.slice(1).some(x=>/<sup|\*|title=/i.test(x))});}return out;}
+async function main(){await fs.mkdir('.cache/snirh-history',{recursive:true});let records=[],sources=[];
+ for(let year=2016;year<=2025;year++){let url=root+'janela_verdados.php?'+new URLSearchParams({sites:station,pars:'1845,1850',tmin:'01/01/'+year,tmax:'31/12/'+year}),file='.cache/snirh-history/'+year+'.html',html;try{html=await fs.readFile(file,'utf8');}catch{let r=await fetch(url,{signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error('SNIRH history '+r.status);html=new TextDecoder('windows-1252').decode(await r.arrayBuffer());await fs.writeFile(file,html);}
+ let rows=parse(html);records.push(...rows);sources.push({year,url,rows:rows.length,sha256:crypto.createHash('sha256').update(html).digest('hex')});}
+ const url=root+'simplex.php?'+new URLSearchParams({OBJINFO:'INFO',FILTRA_SITE:station,FILTRA_COVER:'920123705'}),r=await fetch(url),html=new TextDecoder('windows-1252').decode(await r.arrayBuffer());
+ if(!r.ok||!html.includes('15.45 (22/06/2004-)'))throw Error('Station zero reference changed; review required');
+ let pairs=records.filter(r=>r.level_daily_m!=null&&r.flow_daily_m3s!=null&&!r.flags_present);
+ let j={schema_version:'floods-calibration-data/1',retrieved_at:new Date().toISOString(),station_id:station,station_code:'12G/04H',parameters:{level_daily_m:1845,flow_daily_m3s:1850},records,sources,gauge_zero:{value_m:15.45,valid_from:'2004-06-22',source_url:url,vertical_datum:'SNIRH station metadata; relationship to EGM2008 unresolved',verified_in_source:true},assessment:{daily_level_count:records.filter(r=>r.level_daily_m!=null).length,daily_flow_count:records.filter(r=>r.flow_daily_m3s!=null).length,usable_same_station_daily_pairs:pairs.length,operational_calibration_accepted:false,reason:'Daily summaries cannot validate instantaneous flood hydraulics; reconcile datum, surveyed terrain and event observations before acceptance'}};
+ await fs.writeFile('dist/data/coimbra-calibration-data.json',JSON.stringify(j));console.log(JSON.stringify(j.assessment));
+}
+if(require.main===module)main().catch(e=>{console.error(e.message);process.exitCode=1;});module.exports={parse};

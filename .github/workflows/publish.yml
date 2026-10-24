@@ -31,7 +31,7 @@ jobs:
       - name: Collect public observations
         env:
           FLOODS_HYDROLOGY_URL: ${{ vars.FLOODS_HYDROLOGY_URL }}
-        run: node tools/update.cjs && node tools/reservoirs.cjs
+        run: node tools/update.cjs && node tools/reservoirs.cjs && node tools/snirh.cjs
       - name: ECMWF cache period
         id: model-period
         run: echo "key=$(node -p 'Math.floor(Date.now()/21600000)')" >> "$GITHUB_OUTPUT"
@@ -54,7 +54,7 @@ jobs:
           path: .cache/bgri-coimbra.geojson
           key: floods-bgri-coimbra-2021-v1
       - name: Verify and calculate experimental Coimbra hydraulics
-        run: python -m unittest discover -s engine -p 'test_*.py' && python engine/run.py && node tools/compress.cjs
+        run: python -m unittest discover -s engine -p 'test_*.py' && python engine/run.py && node tools/readiness.cjs && python tools/expansion.py && node tools/compress.cjs
       - name: Preserve dated evidence
         uses: actions/upload-artifact@v4
         with:
@@ -67,6 +67,8 @@ jobs:
             dist/data/rainfall-estimates.json
             dist/data/status.json
             dist/data/hydraulic-*
+            dist/data/snirh-*
+            dist/data/national-readiness.json
           retention-days: 30
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

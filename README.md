@@ -7,6 +7,14 @@ Portal experimental de chuva, escoamento e exposição populacional em Portugal 
 - [Artigo em desenvolvimento](docs/ARTIGO_EM_DESENVOLVIMENTO.md)
 - [População presente, Meta e operadores](docs/MOBILIDADE_E_POPULACAO_PRESENTE.md)
 
+## Ligação SNIRH — atualização 24/10/2026
+
+Medições reais APA/InfoÁgua de níveis, caudais, afluentes e efluentes: 155 estações do catálogo hidrométrico/albufeiras. Recolha automática de 48 h com datas por grandeza; ausências e dados antigos permanecem distintos de zero. Adaptador de páginas públicas, não API contratual documentada. Ver [calibração e expansão](docs/SNIRH_CALIBRACAO_EXPANSAO.md).
+
+Santa Clara: zero de régua 15,45 m confirmado na ficha SNIRH; 3233 níveis diários em 2016–2025, zero caudais e zero pares utilizáveis no conjunto consultado. Não foi possível aceitar a calibração hidráulica. As descargas estão ligadas para consulta, ainda sem assimilação na mancha; não somar Aguieira e Raiva. A vista atual mantém a sinalização das freguesias bloqueada até validação.
+
+Preparado inventário espacial para 262 bacias continentais, com medições e pendências por bacia; Açores/Madeira requerem fontes regionais. Comandos: `node tools/snirh.cjs`, `node tools/snirh-history.cjs` (histórico, ocasional), `node tools/readiness.cjs`, `python tools/expansion.py`. Ajustador de curva com separação de eventos e sem extrapolação em `engine/calibration.py`; nunca converte um teste sintético em calibração real.
+
 ## Estado real
 
 Chuva IPMA, bacias/rios APA, CAOP2025 e BGRI2021 integrados. Volumes precipitados e escoamento SCS-CN recalculados automaticamente. ECMWF completa bacias sem observações suficientes; ERA5 2016–2025 fornece referência estimada de dez anos. Os dados de modelo são identificados.

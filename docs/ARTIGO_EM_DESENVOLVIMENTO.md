@@ -151,3 +151,6 @@ Antes de submissão: completar revisão bibliográfica académica, dados hidrom�
 ## Atualização 24/10/2026 — piloto hidráulico executável
 O piloto de Coimbra já calcula caudal propagado, nível em secções derivadas do DSM, mancha ligada ao rio limitada pelo volume disponível e exposição BGRI. Ver [método, resultados e limites](PILOTO_HIDRAULICO_COIMBRA.md). É uma estimativa experimental, sem calibração, separada da publicação de risco operacional validado. Os parágrafos anteriores sobre hidráulica pendente referem-se à validação e expansão nacional, não à ausência deste piloto.
 
+
+## Atualização — ligação real SNIRH e limites da calibração
+Medições reais ligadas através do portal oficial InfoÁgua/APA. Investigação de dados de Santa Clara, zero da régua, curvas históricas e expansão espacial documentada em [SNIRH, calibração e expansão](SNIRH_CALIBRACAO_EXPANSAO.md). O resultado da avaliação de calibração é negativo por falta de pares contemporâneos Q/H e reconciliação vertical; não se apresenta o piloto como calibrado.
