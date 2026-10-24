@@ -1,0 +1,1 @@
+const fs=require('node:fs'),z=require('node:zlib');for(let n of fs.readdirSync('dist/data'))if(n.endsWith('.geojson'))fs.writeFileSync('dist/data/'+n+'.gz',z.gzipSync(fs.readFileSync('dist/data/'+n),{level:9}));

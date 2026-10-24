@@ -1,0 +1,6 @@
+const {test}=require('node:test'),a=require('node:assert/strict'),H=require('../shared/hydraulic-core.cjs'),C=require('../dist/core.js');
+test('reservoir storage conserves mass, separately tracking unrouted overflow',()=>{let r=H.storageStep({storage_m3:100,inflow_m3s:5,outflow_m3s:2,seconds:60,capacity_m3:200});a.equal(r.storage_m3,200);a.equal(r.release_m3,120);a.equal(r.unrouted_overflow_m3,80);a.equal(r.balance_error_m3,0);});
+test('requested release cannot create negative stored water',()=>{let r=H.storageStep({storage_m3:10,inflow_m3s:0,outflow_m3s:5,seconds:60,capacity_m3:200});a.equal(r.storage_m3,0);a.equal(r.release_m3,10);a.equal(r.balance_error_m3,0);});
+test('storm increments sum to cumulative event runoff, without resetting hourly losses',()=>{let q=H.runoffIncrements([5,10,30,50,100],75);a.ok(Math.abs(q.reduce((x,y)=>x+y,0)-C.runoff(100,75))<1e-10);a.throws(()=>H.runoffIncrements([50,20],75));});
+test('level curve cannot extrapolate beyond measured/calibrated limits',()=>{a.equal(H.interpolateCurve([[0,10],[100,12]],50),11);a.throws(()=>H.interpolateCurve([[0,10],[100,12]],150));});
+test('rain volume, Q10 or a planning scenario cannot unlock current parish risk',()=>{a.equal(H.publishableInundation({rainfall_volume_m3:1e9,return_period:100}),false);a.equal(H.publishableInundation({status:'validated_hydraulic_model',features:[]}),false);});

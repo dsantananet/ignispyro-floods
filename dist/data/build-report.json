@@ -1,0 +1,1 @@
+{"parishes":3049,"population_matched":2726,"population_missing":323,"geography_review":323,"risk_counts":{"20":231,"100":286,"1000":233},"build_time_utc":"2026-10-24T17:34:02.012882+00:00","prototype_spatial_tolerance_degrees":0.0001,"note":"Triagem com geometria simplificada; confirmar interseções de fronteira em dados analíticos originais para publicação científica."}

@@ -1,0 +1,65 @@
+name: IgnispyroFloods — observations, simulation and cloud map
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '4,19,34,49 * * * *'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: floods-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify calculations and data policies
+        run: node --test test/*.test.cjs && node --check dist/app.js && node --check dist/enhancements.js
+      - name: Collect public observations
+        env:
+          FLOODS_HYDROLOGY_URL: ${{ vars.FLOODS_HYDROLOGY_URL }}
+        run: node tools/update.cjs && node tools/reservoirs.cjs
+      - name: ECMWF cache period
+        id: model-period
+        run: echo "key=$(node -p 'Math.floor(Date.now()/21600000)')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: .cache/ecmwf.json
+          key: floods-ecmwf-${{ steps.model-period.outputs.key }}
+          restore-keys: floods-ecmwf-
+      - name: Model estimates for rainfall gaps
+        run: node tools/estimates.cjs
+      - name: Automatic runoff sensitivity
+        run: node tools/simulate.cjs && node tools/compress.cjs
+      - name: Preserve dated evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: floods-observations-${{ github.run_id }}
+          path: |
+            dist/data/stations.geojson
+            dist/data/hydrology.json
+            dist/data/reservoir-bulletin.json
+            dist/data/simulation.json
+            dist/data/rainfall-estimates.json
+            dist/data/status.json
+          retention-days: 30
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,14 @@
+{
+  "name": "ignispyro-floods",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "update": "node --use-system-ca tools/update.cjs",
+    "build": "node tools/validate-data.cjs",
+    "test": "node --test test/*.test.cjs",
+    "start": "node serve.cjs"
+  },
+  "dependencies": {
+    "@turf/turf": "7.2.0"
+  }
+}
