@@ -19,7 +19,7 @@ function observations(parameter,now=Date.now()){
  let expected={1:['flow_m3s','m3/s'],2:['outflow_m3s','m3/s'],3:['elevation_m','m'],4:['level_m','m'],6:['inflow_m3s','m3/s'],7:['storage_percent','%']}[parameter.id];
  if(!expected||parameter.unit?.trim()!==expected[1])return null;
  let unique=new Map(),rejected=0;
- for(let row of parameter.values||[]){let time=sourceTime(row.moment),v=row.value;if(!time||typeof v!=='number'||!Number.isFinite(v)||v===-99||(expected[0]!=='elevation_m'&&v<0)||(expected[0]==='storage_percent'&&v>100)||Date.parse(time)>now+360000){rejected++;continue;}let old=unique.get(time);if(old&&old.value!==v){unique.set(time,{invalid:true});rejected++;}else if(!old)unique.set(time,{observed_at:time,value:v,source_time:row.moment});}
+ for(let row of parameter.values||[]){let time=sourceTime(row.moment),v=row.value;if(!time||typeof v!=='number'||!Number.isFinite(v)||v===-99||(['flow_m3s','outflow_m3s','inflow_m3s','storage_percent'].includes(expected[0])&&v<0)||Date.parse(time)>now+360000){rejected++;continue;}let old=unique.get(time);if(old&&old.value!==v){unique.set(time,{invalid:true});rejected++;}else if(!old)unique.set(time,{observed_at:time,value:v,source_time:row.moment});}
  let rows=[...unique.values()].filter(r=>!r.invalid).sort((a,b)=>a.observed_at.localeCompare(b.observed_at));
  return {quantity:expected[0],unit:expected[1],parameter_id:parameter.id,rows,rejected,latest:rows.at(-1)||null};
 }
