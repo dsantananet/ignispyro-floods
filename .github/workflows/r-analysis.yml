@@ -1,0 +1,34 @@
+name: Reproduce Coimbra analysis in R
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/coimbra-analysis.R'
+      - 'dist/data/coimbra-weir-daily.csv'
+      - '.github/workflows/r-analysis.yml'
+permissions:
+  contents: read
+jobs:
+  research-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.6.1'
+          use-public-rspm: true
+      - name: Execute the published analysis, without external R packages
+        run: Rscript --vanilla tools/coimbra-analysis.R
+      - name: Verify coefficient and keep operational gate closed
+        run: Rscript --vanilla -e 'x<-read.csv("dist/analysis/weir-fit-metrics.csv");stopifnot(abs(x$coefficient_m05_s-1.49994175883654)<1e-8,!x$operational_accepted,x$validation_inrange_days==1,x$validation_extrapolated_days==1)'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coimbra-r-analysis-${{ github.run_id }}
+          path: |
+            dist/analysis/
+            dist/figures/09_r_historico.png
+            dist/figures/10_r_descarga.png
+            dist/figures/11_r_residuos.png
+            dist/figures/12_r_perfil_projeto.png

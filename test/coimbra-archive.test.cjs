@@ -1,0 +1,5 @@
+const {test}=require('node:test'),a=require('node:assert/strict'),{summaries}=require('../tools/coimbra-archive.cjs');
+test('Historical daily flow is not paired with a single midnight stage',()=>{let x=summaries([{source_local_time:'2001-01-01T00:00:00',discharged_daily_m3s:1000,reservoir_elevation_m:18,flags_present:false}])[0];a.equal(x.elevation_mean_m,null);a.equal(x.elevation_full_24h,false);a.equal(x.outflow_daily_m3s,null);a.equal(x.discharged_daily_m3s,1000);});
+test('24 distinct unflagged hours produce a daily stage; missing/duplicate hours do not',()=>{let rows=Array.from({length:24},(_,i)=>({source_local_time:'2001-01-01T'+String(i).padStart(2,'0')+':00:00',reservoir_elevation_m:18,flags_present:false}));a.equal(summaries(rows)[0].elevation_mean_m,18);rows[23]=rows[0];a.equal(summaries(rows)[0].elevation_mean_m,null);});
+
+test('24 irregular samples are not a full hourly day',()=>{let rows=Array.from({length:24},(_,i)=>({source_local_time:'2001-01-01T'+String(Math.floor(i/4)).padStart(2,'0')+':'+String(i%4*15).padStart(2,'0')+':00',reservoir_elevation_m:18,flags_present:false}));a.equal(summaries(rows)[0].elevation_mean_m,null);});

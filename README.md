@@ -57,3 +57,9 @@ O contrato `shared/population-presence.cjs` pode ser reutilizado nas plataformas
 Fontes: IPMA; APA/SNIRH; DGT/CAOP; INE/BGRI; ARBCAS; Copernicus ERA5/GloFAS via Open-Meteo. Ver URLs/proveniência nos dados e no artigo. O espelho BGRI é alojado por DefSegMar em ArcGIS; metadados da cópia sem licença explícita, pelo que a redistribuição comercial deve ser confirmada com a fonte original. Este portal disponibiliza agregados e consulta a camada pública, sem republicar integralmente as subsecções.
 
 A API pública Open-Meteo destina-se a utilização não comercial; utilização comercial exige serviço adequado ou alojamento próprio. Código do projeto não altera direitos sobre dados, marca ou bibliotecas. Credenciais e dados privados não pertencem ao repositório.
+
+## Versão 0.2 publicada para avaliação operacional
+
+[Relatório e análise em R](https://dsantananet.github.io/ignispyro-floods/operational-review.html) · [Artigo](https://dsantananet.github.io/ignispyro-floods/article.html). Ver docs/ARTIGO_AVALIACAO_OPERACIONAL.md. Arquivo adicional Açude-Ponte1987–2025, peças DWF históricas e perfil de projeto2010 localizados. Ajuste preliminar de descarga com cinco dias de treino e dois de confronto, um fora do domínio. NÃO valida a mancha operacional.
+
+Reproduzir: `node tools/export-r.cjs`; `Rscript --vanilla tools/coimbra-analysis.R`; `node tools/package-review.cjs`; `node tools/review-document.cjs`. R de base, sem pacotes adicionais. O CI R reproduz a análise em cada alteração relevante; o cálculo histórico não é reajustado a cada15min. Descargas reais alimentam tools/coimbra-boundaries.py e o pacote de fronteiras/continuidade; a assimilação espacial fica bloqueada até validação.

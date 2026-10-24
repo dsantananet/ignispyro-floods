@@ -54,7 +54,7 @@ jobs:
           path: .cache/bgri-coimbra.geojson
           key: floods-bgri-coimbra-2021-v1
       - name: Verify and calculate experimental Coimbra hydraulics
-        run: python -m unittest discover -s engine -p 'test_*.py' && python engine/run.py && node tools/readiness.cjs && python tools/expansion.py && node tools/compress.cjs
+        run: python -m unittest discover -s engine -p 'test_*.py' && python tools/coimbra-boundaries.py && python engine/run.py && node tools/readiness.cjs && python tools/expansion.py && node tools/compress.cjs
       - name: Preserve dated evidence
         uses: actions/upload-artifact@v4
         with:
@@ -69,6 +69,8 @@ jobs:
             dist/data/hydraulic-*
             dist/data/snirh-*
             dist/data/national-readiness.json
+            dist/data/coimbra-boundaries.json
+            dist/data/operational-review.json
           retention-days: 30
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
