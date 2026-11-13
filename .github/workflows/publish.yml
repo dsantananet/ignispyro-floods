@@ -27,7 +27,7 @@ jobs:
       - name: Install pinned dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Verify calculations and data policies
-        run: node --test test/*.test.cjs && node --check dist/app.js && node --check dist/enhancements.js && node --check dist/live.js
+        run: node --test test/*.test.cjs && node --check dist/app.js && node --check dist/enhancements.js && node --check dist/live.js && node --check dist/basemaps.js
       - name: Collect public observations
         env:
           FLOODS_HYDROLOGY_URL: ${{ vars.FLOODS_HYDROLOGY_URL }}

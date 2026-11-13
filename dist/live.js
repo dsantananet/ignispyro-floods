@@ -38,11 +38,11 @@
   liveRender();
  };
  function liveRender(){
-  const notice=document.querySelector('.notice');$('period').parentElement.hidden=true;
+  const notice=$('live-panel');$('period').parentElement.hidden=true;
   const h=age();
-  if(!watch){$('legend').innerHTML='<b>Monitorização em tempo real</b><small>A carregar ou indisponível. Sem cálculo atual, nenhuma freguesia é classificada.</small>';notice.innerHTML='<b>Monitorização em tempo real</b><p>Índice indisponível neste momento. Não se assume ausência de risco.</p>';$('results').innerHTML='';return;}
+  if(!watch){$('legend').innerHTML='<b>Monitorização em tempo real</b><small>A carregar ou indisponível. Sem cálculo atual, nenhuma freguesia é classificada.</small>';notice.innerHTML='<span class="tag">EXPERIMENTAL</span><b>Monitorização em tempo real</b><p>Índice indisponível neste momento. Não se assume ausência de risco.</p>';$('results').innerHTML='';return;}
   const stale=h===null||h>3,expired=h===null||h>12,sum=watch.summary.parishes_by_class;
-  notice.innerHTML='<b>Suscetibilidade em ativação · rastreio</b><p>Combina suscetibilidade estrutural (zonas APA T20/T100/T1000, proximidade de rios'+(watch.inputs.terrain?', MDT':'')+') com chuva, escoamento SCS-CN, previsão ECMWF, albufeiras e subida de níveis. <b>Não é altura de água, mancha, probabilidade nem aviso oficial.</b></p><p class="live-age'+(stale?' stale':'')+'">Calculado '+date(watch.computed_at)+' · '+(h===null?'idade desconhecida':h<1?'há '+Math.round(h*60)+' min':'há '+num(h,1)+' h')+(expired?' · <b>desatualizado: cores suspensas</b>':stale?' · atenção: atraso na atualização':'')+'</p>';
+  notice.innerHTML='<span class="tag">EXPERIMENTAL</span><b>Suscetibilidade em ativação · rastreio</b><p>Combina suscetibilidade estrutural (zonas APA T20/T100/T1000, proximidade de rios'+(watch.inputs.terrain?', MDT':'')+') com chuva, escoamento SCS-CN, previsão ECMWF, albufeiras e subida de níveis. <b>Não é altura de água, mancha, probabilidade nem aviso oficial.</b></p><p class="live-age'+(stale?' stale':'')+'">Calculado '+date(watch.computed_at)+' · '+(h===null?'idade desconhecida':h<1?'há '+Math.round(h*60)+' min':'há '+num(h,1)+' h')+(expired?' · <b>desatualizado: cores suspensas</b>':stale?' · atenção: atraso na atualização':'')+'</p>';
   const n3=(sum['Elevada']||0)+(sum['Muito elevada']||0)+(sum['Crítica']||0);
   $('parish-count').textContent=num(n3,0);if(label)label.textContent='freguesias com ativação elevada ou superior';
   $('legend').innerHTML='<b>Ativação da suscetibilidade</b>'+[5,4,3,2,1,0].map(i=>'<div class="legend-row"><i class="swatch" style="background:'+color(i)+'"></i>'+klass(i)+' · '+num(sum[klass(i)]||0,0)+'</div>').join('')+'<small>Moderada sem chuva = suscetibilidade estrutural elevada, sem ativação. Albufeiras: círculos azul-escuro; hidrométricas: vermelho = em subida.</small>';

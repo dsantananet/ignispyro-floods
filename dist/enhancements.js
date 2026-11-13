@@ -4,8 +4,6 @@ document.title='IgnispyroFloods · Chuva, escoamento e população';
 document.querySelector('.wordmark span').innerHTML='Ignispyro<b>Floods</b>';
 const control=document.createElement('div');control.className='select-row';control.innerHTML='<label for="period">Cenário de inundação · não é previsão atual</label><select id="period"><option value="20">T20 · APA</option><option value="100" selected>T100 · APA</option><option value="1000">T1000 · APA</option><option value="10" disabled>T10 · sem cartografia ligada</option></select><p class="caption">Os períodos de retorno não são inferidos da chuva da estação.</p>';
 $('view').parentElement.after(control);
-const note=document.createElement('p');note.className='caption';note.innerHTML='<a href="report.html">Relatório e figuras ↗</a> · <a href="https://github.com/dsantananet/ignispyro-floods/tree/main/docs">Estudo e fontes ↗</a>';
-document.querySelector('.notice').after(note);
 const originalRender=render;render=function(){originalRender();$('legend').innerHTML=$('legend').innerHTML.replaceAll('T100','T'+period);};
 const originalShow=showParish;
 showParish=function(code,fly=true){originalShow(code,fly);let f=data.parishes.features.find(f=>f.properties.dtmnfr===code);if(!f)return;let p=f.properties,root=$('detail-content');root.innerHTML=root.innerHTML.replaceAll('T100','T'+period).replace('Censos 2021 · INE 0014584, apurados para a geografia de freguesias de 2025.','Censos 2021 · '+E(p.population_source)+'. Contagens etárias no território compatível; ver método.');
