@@ -27,7 +27,7 @@ jobs:
       - name: Install pinned dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Verify calculations and data policies
-        run: node --test test/*.test.cjs && node --check dist/app.js && node --check dist/enhancements.js
+        run: node --test test/*.test.cjs && node --check dist/app.js && node --check dist/enhancements.js && node --check dist/live.js
       - name: Collect public observations
         env:
           FLOODS_HYDROLOGY_URL: ${{ vars.FLOODS_HYDROLOGY_URL }}
@@ -44,11 +44,13 @@ jobs:
         run: node tools/estimates.cjs
       - name: Automatic runoff sensitivity
         run: node tools/simulate.cjs
+      - name: Real-time susceptibility index (IAS)
+        run: node tools/floodwatch.cjs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install hydraulic dependencies
-        run: pip install numpy==2.5.4 shapely==2.2.0 rasterio==1.5.2 pyproj==3.8.0
+        run: pip install numpy==2.5.4 scipy shapely==2.2.0 rasterio==1.5.2 pyproj==3.8.0
       - uses: actions/cache@v4
         with:
           path: .cache/bgri-coimbra.geojson
@@ -64,6 +66,7 @@ jobs:
             dist/data/hydrology.json
             dist/data/reservoir-bulletin.json
             dist/data/simulation.json
+            dist/data/floodwatch.json
             dist/data/rainfall-estimates.json
             dist/data/status.json
             dist/data/hydraulic-*

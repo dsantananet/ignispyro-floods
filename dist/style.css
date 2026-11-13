@@ -3,3 +3,5 @@
 @media(max-width:1000px){nav{gap:10px}.wordmark span{font-size:20px}.wordmark small{font-size:8px}header{padding-inline:15px}main{grid-template-columns:310px 1fr}.sidebar{padding:22px 18px}.detail{width:310px}.statusbar{padding-inline:15px;gap:10px}}@media(max-width:700px){header{height:75px;gap:10px}.brand{width:45px}.brand img{width:45px}.wordmark span{font-size:18px}.wordmark small{font-size:7px;letter-spacing:.8px}nav a{display:none}nav button{font-size:9px;padding:8px}.statusbar{flex-wrap:wrap;font-size:9px;height:auto;min-height:49px}#updated{margin-left:0}main{display:flex;flex-direction:column;height:auto}.map-region{order:-1;height:65dvh;min-height:450px}.sidebar{overflow:visible}.detail{bottom:15px;top:55px}.legend{bottom:45px;font-size:9px;max-width:210px;padding:12px}.map-note{font-size:8px;left:10px;bottom:20px}.map-top{left:10px;top:10px}.map-top span{font-size:8px}.results{max-height:350px;overflow:auto}}
 
 [hidden]{display:none!important}
+
+.live-age{font-size:.78rem;color:#4b6368}.live-age.stale{color:#a4361f;font-weight:600}

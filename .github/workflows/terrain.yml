@@ -1,0 +1,23 @@
+name: IgnispyroFloods — terrain susceptibility (MDT, manual)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  terrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install numpy==2.5.4 scipy shapely==2.2.0 rasterio==1.5.2 pyproj==3.8.0
+      - run: python -m unittest discover -s engine -p 'test_*.py'
+      - run: python tools/terrain-susceptibility.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add dist/data/terrain-susceptibility.json
+          git diff --staged --quiet || git commit -m "Update MDT terrain susceptibility" && git push

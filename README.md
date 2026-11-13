@@ -39,6 +39,22 @@ node serve.cjs
 
 O mapa local abre em http://127.0.0.1:4190/. GitHub Actions recolhe e publica de 15 em 15 minutos; a fonte IPMA é horária, o ECMWF é reutilizado até6h. A agenda pode atrasar. Os ficheiros publicados contêm hora de consulta e validade. Não há alertas automáticos a pessoas nem notificações externas.
 
+## Versão 0.3 — monitorização em tempo real da suscetibilidade (IAS)
+
+Vista predefinida «Monitorização em tempo real · suscetibilidade»: cada freguesia recebe cinco classes de cor (Baixa → Crítica) que mudam a cada 15 min com a chuva, o escoamento, a previsão, as albufeiras e a subida dos níveis. **É um rastreio: não é altura de água, mancha, probabilidade nem aviso oficial.** A vista «Observações reais» mantém o bloqueio da mancha hidráulica sem validação.
+
+```text
+IAS = matriz[ suscetibilidade estrutural 1..5 , ativação da bacia 1..4 (+1 albufeira ≥90 % ou nível a subir) ]
+```
+
+- **Estrutural** (`tools/susceptibility.py` → `dist/data/susceptibility.json`): fração da freguesia em zonas APA T20/T100/T1000 e a ≤300 m de rios; com MDT (`tools/terrain-susceptibility.py`, workflow manual *terrain*) junta a fração com altura acima da drenagem mais próxima <5 m (HAND por vizinho mais próximo, Copernicus GLO-30). Pesos de especialista (zona 0,5 · MDT 0,3 · rio 0,2), não ajustados. Sem zona APA a classe não passa de «Elevada».
+- **Ativação** (`tools/floodwatch.cjs`, `dist/floodwatch-core.js`): pior de chuva 1/6/24 h e escoamento SCS-CN; CN 75 corrigido pela chuva das 24 h anteriores (proxy de humidade antecedente AMC I/II/III); previsão ECMWF sobe no máximo uma classe; ponta por hidrograma unitário SCS apenas como ordem de grandeza (bacias ≤500 km²). Dados com mais de 3 h anulam a bacia; índice com mais de 12 h suspende as cores.
+- **Albufeiras e hidrométricas**: enchimento (boletins SNIRH/ARBCAS, ignorados se >35 dias) e tendência de subida (APA/InfoÁgua). Não há limiares de caudal por estação, logo não há classificação absoluta.
+- **População**: residentes × fração da freguesia em zona T100 (estimativa por área; as subsecções BGRI não são intersetadas nesta vista).
+- **Motor hidráulico** (`engine/hydraulics.py`): acrescentado o princípio 1D estacionário do HEC-RAS — subdivisão de condutância (margens/canal), coeficiente de energia α, método *standard step* (equação de energia, perda por atrito com condutância média, perdas de contração 0,1/expansão 0,3). Regime subcrítico, sem pontes/açudes; sinaliza secções críticas. Ainda **não ligado** ao piloto de Coimbra nem à calibração.
+
+Comandos: `node tools/floodwatch.cjs` (ciclo de 15 min no CI), `python tools/susceptibility.py` (ocasional), `FLOODWATCH_NOW=<ISO> node tools/floodwatch.cjs` para reprocessar um instantâneo antigo. Testes: `node --test test/*.test.cjs` e `python -m unittest discover -s engine -p 'test_*.py'`.
+
 ## Estudos históricos
 
 `tools/history.cjs`: 28 referências ERA5, 3653dias, IDW3 para262bacias; preserva séries e estatísticas.
