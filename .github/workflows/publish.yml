@@ -45,6 +45,7 @@ jobs:
       - name: Automatic runoff sensitivity
         run: node tools/simulate.cjs
       - name: Real-time susceptibility index (IAS)
+        continue-on-error: true  # a failure must never block the observations/site publish; the map then shows the index as unavailable
         run: node tools/floodwatch.cjs
       - uses: actions/setup-python@v5
         with:
