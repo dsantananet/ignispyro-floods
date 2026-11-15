@@ -1,6 +1,6 @@
 import {archiveCharles} from './archive-charles.mjs';
-import{readFile,writeFile,rename,mkdir}from'node:fs/promises';import{join}from'node:path';import S from'./snirh-source.cjs';import{accumulated,numeric,recent,calculateBasins}from'./collector-core.mjs';
-const state='/state',seed='/seed';let running=false,cycle=0,catalog=null,catalogTime=0,modelCache=null;
+import{readFile,writeFile,rename,mkdir}from'node:fs/promises';import{join}from'node:path';import S from'../shared/snirh.cjs';import{accumulated,numeric,recent,calculateBasins}from'./collector-core.mjs';
+const state=process.env.FLOODS_STATE_DIR || '/state',seed=process.env.FLOODS_SEED_DIR || '/seed';let running=false,cycle=0,catalog=null,catalogTime=0,modelCache=null;
 const load=async p=>JSON.parse(await readFile(p,'utf8'));
 async function save(n,j){await mkdir(state,{recursive:true});const p=join(state,n);await writeFile(p+'.pending',JSON.stringify(j));await rename(p+'.pending',p);}
 async function get(url,signal,html=false){const r=await fetch(url,{redirect:'error',signal:AbortSignal.any([AbortSignal.timeout(12000),signal]),headers:{'User-Agent':'IGNISPYRO-Floods-private-monitor/1'}});if(!r.ok)throw Error('upstream_http_'+r.status);let b=await r.text();if(Buffer.byteLength(b)>8000000)throw Error('source_size');return html?b:JSON.parse(b);}
@@ -18,4 +18,4 @@ async function loop(){if(running)return;running=true;const start=Date.now(),cont
  let est=tasks[2].status==='fulfilled'?tasks[2].value:new Map();const sim=calculateBasins(basins,areas,stations,est);await save('simulation.json',sim);
  const eventStatus={status:errors.length?'partial':'ok',started_at:new Date(start).toISOString(),completed_at:new Date().toISOString(),cycle,interval_seconds:900,errors,stations:stations.features.length,basins:sim.basins.length,telemetry_status:tasks[1].status==='fulfilled'?tasks[1].value.collection_status:'unavailable'};await save('monitor-status.json',eventStatus);try{await archiveCharles(state,eventStatus,stations,tasks[1].status==='fulfilled'?tasks[1].value:null,sim);}catch{console.error('charles_archive_failed');}console.log(JSON.stringify({cycle,status:errors.length?'partial':'ok',errors,duration_seconds:(Date.now()-start)/1000}));
  }catch{await save('monitor-status.json',{status:'failed',completed_at:new Date().toISOString(),errors:['collector_failure'],interval_seconds:900});}finally{clearTimeout(timer);running=false;}}
-await loop();setInterval(loop,900000);
+await loop();if (!process.argv.includes('--once')) setInterval(loop,900000);
