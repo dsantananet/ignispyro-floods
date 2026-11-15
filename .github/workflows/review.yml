@@ -1,0 +1,23 @@
+name: Verificar alterações ao Floods
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install numpy scipy
+      - run: npm test
+      - run: npm run build
+      - run: node --test nas/archive-charles.test.mjs
+      - run: node --check nas/collector.mjs && node --check dist/floods-v2.js
+      - run: python -m unittest discover -s engine

@@ -95,3 +95,5 @@ python tools/validation-document.py
 ```
 
 O ZIP oficial é verificado por SHA256 antes da extração. A análise histórica fica congelada e não integra o ciclo de telemetria de 15 minutos. Código R apenas com bibliotecas base; métricas, GeoJSON e gráficos publicados em `dist/`. Testes mantêm bloqueada a aceitação operacional e proíbem inventar métricas para eventos sem mancha observada.
+
+[Abrir o observatório Floods v2](dist/floods-v2.html) · [Consolidação, ensaios e integração](docs/CONSOLIDACAO_V2.md)
