@@ -28,7 +28,7 @@ function metrics(entries) {
     return [dt, dd];
   }));
 }
-let map;
+let map, popup;
 let report, flow, observed, simulated, series = [], timer, revision = 0;
 function data(id, collection = empty()) {
   map?.getSource(id)?.setData(collection);
@@ -65,7 +65,7 @@ function renderDay() {
   const scenario = report.events.find(entry => entry.date === date && entry.duration_assumed_h === 24);
   const match = date === report.observation_time_utc.slice(0, 10);
   data('observed', match ? observed : empty());
-  data('simulated', match ? simulated : empty());
+  data('simulated', points(simulated, ({ properties }) => properties.date === date));
   chart(index);
   const entries = [['Caudal descarregado', Number.isFinite(value) ? number(value) + ' m³/s' : 'Sem dados']];
   if (scenario) entries.push(['Área simulada total (cenário de 24 h)', number(scenario.overbank_area_m2 / 10000) + ' ha']);
@@ -77,7 +77,9 @@ function renderDay() {
   metrics(entries);
   el('notice').textContent = match
     ? 'Sentinel-1A, 23/12 às 06:43 UTC. O cenário usa a média diária. O confronto espacial falhou.'
-    : 'Sem mancha comparável para este dia. O gráfico mostra observações diárias.';
+    : scenario
+      ? 'Mancha exploratória do piloto para este dia. Sem observação independente comparável.'
+      : 'Sem mancha disponível para este dia. O gráfico mostra observações diárias.';
 }
 const recent = (time, now) => Number.isFinite(Date.parse(time)) && Date.parse(time) <= now && now - Date.parse(time) <= 10800000;
 function points(collection, predicate) {
@@ -91,6 +93,7 @@ function stop() {
 async function render() {
   const request = ++revision;
   stop();
+  popup?.remove();
   const event = el('event').value;
   const historical = Boolean(events[event]);
   el('historical-layers').hidden = !historical;
@@ -137,7 +140,7 @@ async function initialize() {
     let csv;
     [report, csv, observed, simulated] = await Promise.all([
       get('coimbra-validation.json'), get('coimbra-weir-daily.csv', 'text'),
-      get('coimbra-observed-2019.geojson'), get('coimbra-hindcast-2019.geojson'),
+      get('coimbra-observed-2019.geojson'), get('coimbra-hindcast-frames.geojson'),
     ]);
     flow = new Map(csv.trim().split(/\r?\n/).slice(1).map(line => {
       const [date, , , value] = line.split(',');
@@ -191,7 +194,8 @@ async function initialize() {
           row.textContent = label + ' · ' + number(p[key]) + ' · ' + new Date(time).toISOString();
           content.append(row);
         }
-        new maplibregl.Popup().setLngLat(event.lngLat).setDOMContent(content).addTo(map);
+        popup?.remove();
+        popup = new maplibregl.Popup().setLngLat(event.lngLat).setDOMContent(content).addTo(map);
       });
       render();
     });

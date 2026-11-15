@@ -47,7 +47,7 @@ for label,start,end in windows:
     if available:
         peak=max(available,key=lambda r:float(r['discharged_daily_m3s']));events.append({'event':label,'date':peak['date'],'q_daily_m3s':float(peak['discharged_daily_m3s']),'reference_extent_available':label=='2019-12'})
 same=next(r for r in rows if r['date']=='2019-12-23');events.append({'event':'2019-image-day','date':same['date'],'q_daily_m3s':float(same['discharged_daily_m3s']),'reference_extent_available':True})
-results=[];preds={}
+results=[];preds={};historical_features=[]
 for event in events:
     for hours in [6,24]:
         q=event['q_daily_m3s'];levels=[solve_stage(x,z,q,slope,width,n,nf)[0] for z in t['profiles']]
@@ -58,11 +58,25 @@ for event in events:
             item['comparison']=overlap_metrics(mask,obs,domain,cell)
             item['observed_recall_with_60m_simulation_tolerance']=float((obs&raster(unary_union([shape(g) for g,v in rasterio.features.shapes(mask.astype('uint8'),mask=mask&domain,transform=aff)]).buffer(60))).sum()/obs.sum()) if obs.any() else None
         results.append(item);preds[(event['event'],hours)]=mask
-        if event['event']=='2019-image-day' and hours==24:
-            features=[{'type':'Feature','geometry':mapping(transform(ll,shape(g))),'properties':{'date':'2019-12-23','scenario':'daily_mean_24h_screening','operationally_accepted':False}} for g,v in rasterio.features.shapes(mask.astype('uint8'),mask=mask,transform=aff)]
-            write(DATA/'coimbra-hindcast-2019.geojson',{'type':'FeatureCollection','features':features})
+        if hours==24:
+            features=[{'type':'Feature','geometry':mapping(transform(ll,shape(g))),'properties':{'date':event['date'],'scenario':'daily_mean_24h_screening','operationally_accepted':False}} for g,v in rasterio.features.shapes(mask.astype('uint8'),mask=mask,transform=aff)]
+            historical_features.extend(features)
+            if event['event']=='2019-image-day':
+                write(DATA/'coimbra-hindcast-2019.geojson',{'type':'FeatureCollection','features':features})
+write(DATA/'coimbra-hindcast-frames.geojson',{'type':'FeatureCollection','features':historical_features})
 clipobs=observed.intersection(common).difference(permanent).difference(line.buffer(width/2))
 write(DATA/'coimbra-observed-2019.geojson',{'type':'FeatureCollection','source':'© European Union, Copernicus EMS EMSR417 AOI01 v1','observation_time_utc':'2019-12-23T06:43:00Z','features':[{'type':'Feature','geometry':mapping(transform(ll,clipobs)),'properties':{'kind':'satellite_detected_flood','not_peak_envelope':True}}]})
+if '--hydraulics-only' in sys.argv:
+    expected=read(DATA/'coimbra-validation.json')['events']
+    fields=('event','date','q_daily_m3s','duration_assumed_h','overbank_area_m2','comparison')
+    def select(rows):
+        return [{key: row.get(key) for key in fields} for row in rows]
+    if select(results)!=select(expected):
+        raise RuntimeError('Historical hydraulic results differ from the committed reference')
+    print(json.dumps({'historical_scenarios_verified':len(results),
+                      'exported_map_features':len(historical_features),
+                      'image_day_comparison':results[-1].get('comparison')}))
+    sys.exit(0)
 # Exposure comparison uses the same census and administrative geometry for both masks.
 # A containing BGRI unit's whole population is an upper allocation bound, not an estimate.
 bgri=read('.cache/bgri-coimbra.geojson');units=[(make_valid(transform(xy_crs,shape(f['geometry']))),f['properties']) for f in bgri['features']]
