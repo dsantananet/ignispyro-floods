@@ -20,7 +20,7 @@ button{background:#0f172a;color:#fff;border:0;border-radius:6px;padding:6px 12px
 <div class="banner">EXPERIMENTAL — NÃO OPERACIONAL</div>
 <h1>Floods AI · ZIP Copernicus → mapa</h1>
 <small>Carregue um ou mais pacotes de delineação do Copernicus EMS Rapid Mapping (<code>EMSRxxx_AOIyy_DEL_…zip</code>). Tudo corre neste browser: nada é enviado para fora (só são lidos os dados públicos do Floods).</small>
-<div id="drop" style="margin-top:10px">Largue aqui o(s) ficheiro(s) ZIP<br>ou clique para escolher<input id="file" type="file" accept=".zip" multiple hidden></div>
+<div id="drop" style="margin-top:10px">Largue aqui o(s) ficheiro(s) ZIP<br>ou clique para escolher <small>(aceita qualquer ficheiro ZIP, mesmo sem extensão .zip)</small><input id="file" type="file" multiple hidden></div>
 <h2>Estado</h2><div class="card" id="status">À espera de ZIP.</div>
 <h2>Camadas</h2>
 <div class="card"><label class="row"><input type="radio" name="col" value="flood" checked> Freguesias coloridas por % inundada</label>
@@ -102,9 +102,15 @@ function colour(){if(!map.getLayer('par-f'))return;const m=document.querySelecto
   $('legend').innerHTML=['Sem dados','Baixa','Moderada','Elevada','Muito elevada','Crítica'].map((n,i)=>`<div class="row"><span class="sw" style="background:${IASC[i]}"></span>IAS estrutural: ${n}</div>`).join('')}
  map.setLayoutProperty('flood','visibility',$('tFlood').checked?'visible':'none');map.setLayoutProperty('aoi','visibility',$('tAoi').checked?'visible':'none')}
 document.querySelectorAll('input[name=col],#tFlood,#tAoi').forEach(e=>e.onchange=colour);
-async function fromFiles(list){const fs=[...list].filter(f=>/\.(zip|tmp)$/i.test(f.name));if(!fs.length)return say('Escolha ficheiros .zip.');
- const out=[];for(const f of fs)out.push({name:f.name,buf:await f.arrayBuffer()});processBuffers(out)}
+async function fromFiles(list){const all=[...list];if(!all.length)return say('Nenhum ficheiro recebido.');
+ if(typeof shp==='undefined'||typeof maplibregl==='undefined')return say('Erro: não foi possível carregar as bibliotecas (shpjs/maplibre) — verifique a ligação à Internet e recarregue a página.');
+ const out=[],skip=[];for(const f of all){say('A ler '+f.name+'…');const buf=await f.arrayBuffer(),h=new Uint8Array(buf.slice(0,4));
+  if(h[0]===0x50&&h[1]===0x4b)out.push({name:f.name,buf});else skip.push(f.name)}   // ZIP = começa por "PK"
+ if(!out.length)return say('Erro: nenhum dos ficheiros é um ZIP ('+skip.join(', ')+'). Use os pacotes EMSRxxx_AOIyy_DEL_….zip do Copernicus.');
+ if(skip.length)console.warn('ignorados (não são ZIP):',skip);processBuffers(out)}
 const dz=$('drop');dz.onclick=()=>$('file').click();$('file').onchange=e=>fromFiles(e.target.files);
 dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};dz.ondragleave=()=>dz.classList.remove('on');dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');fromFiles(e.dataTransfer.files)};
+window.addEventListener('dragover',e=>e.preventDefault());window.addEventListener('drop',e=>{e.preventDefault();if(e.target.closest&&e.target.closest('#drop'))return;fromFiles(e.dataTransfer.files)});
+window.addEventListener('error',e=>say('Erro: '+e.message));window.addEventListener('unhandledrejection',e=>say('Erro: '+(e.reason&&e.reason.message||e.reason)));
 window.processBuffers=processBuffers;
 </script></body></html>
