@@ -22,7 +22,7 @@
    "coverage": "AOI Coimbra, evento desde 26/01/2026",
    "resolution": null,
    "license": null,
-   "status": "descarregado: 1 pacote (AOI05 Coimbra, DEL_PRODUCT v1); rótulos por freguesia em ai/data/labels",
+   "status": "descarregada Coimbra; restantes áreas são espanholas, Castelo Branco sem delineação",
    "limitations": "validar tempo de aquisição vs pico; ausência de deteção ≠ seco",
    "source_url": "https://mapping.emergency.copernicus.eu/news/storm-kristin-and-flooding-in-central-portugal-and-andalusia-spain-emsr861/"
   },
@@ -34,7 +34,7 @@
    "coverage": "evento desde 03/02/2026; 25 AOI",
    "resolution": null,
    "license": null,
-   "status": "descarregados 14 pacotes de 5 AOI (Ermidas Sado, Leiria, Coimbra, Tomar, Mértola); 20 AOI portuguesas por obter",
+   "status": "descarregados pacotes de 12 áreas portuguesas com delineação (falta Porto, Marco de Canaveses, Peso da Régua, Santo Tirso, Silves)",
    "limitations": "17 AOIs do mesmo evento não são 17 eventos independentes",
    "source_url": "https://eu-space.europa.eu/components/earth-observation-copernicus/image-of-day/storm-leonardo-caused-floods-central-portugal"
   },

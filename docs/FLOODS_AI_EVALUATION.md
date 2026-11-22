@@ -67,24 +67,24 @@ Fontes: Copernicus EMS (mapping.emergency.copernicus.eu: EMSR861, EMSR864, EMSR4
 
 ## 7. Dados obtidos e retroanálise descritiva do IAS estrutural (22-11-2026)
 
-**Dados.** 15 pacotes de delineação Copernicus EMS descarregados (API pública; © União Europeia, Copernicus EMS): EMSR864 (tempestade Leonardo, fev. 2026) áreas Ermidas Sado, Leiria, Coimbra, Tomar e Mértola, e EMSR861 (tempestade Kristin, jan. 2026) área Coimbra. Faltam 20 AOI portuguesas de EMSR864 e as restantes de EMSR861. Rótulos por freguesia em `ai/data/labels/parish_labels_emsr.csv` (script `ai/features/emsr_parish_labels.py`, manifesto com SHA-256 dos pacotes).
+**Dados.** Pacotes de delineação Copernicus EMS (API pública; © União Europeia, Copernicus EMS): EMSR864 (tempestade Leonardo, fev. 2026) — 12 áreas com delineação (Ermidas Sado, Salvaterra de Magos, Leiria, Coimbra, Aveiro, Barcelos, Ponte de Lima, Chaves, Tomar, Mértola, Mira, Minho) — e EMSR861 (Kristin, jan. 2026) — Coimbra. As restantes áreas de EMSR861 são espanholas (Castelo Branco não tem delineação). Rio de Moinhos (AOI02) não gerou freguesias elegíveis. Porto, Marco de Canaveses, Peso da Régua, Santo Tirso e Silves não foram descarregadas (por obter). Rótulos em `ai/data/labels/parish_labels_emsr.csv` (script `ai/features/emsr_parish_labels.py`, manifesto com SHA-256 dos pacotes).
 
-**Regra de rótulo (fixada antes de ver as métricas).** Freguesia com ≥50 % da área dentro da AOI; y=1 se cheia observada ≥5 ha e ≥0,5 % da freguesia. y=0 significa "sem cheia detetada", não "seco confirmado" (limitações SAR): continua a não haver negativos observados.
+**Regra de rótulo (fixada antes de ver as métricas).** Freguesia com ≥50 % da área dentro da AOI; y=1 se cheia observada ≥5 ha e ≥0,5 % da freguesia. y=0 = "sem cheia detetada", não "seco confirmado": continua a não haver negativos observados.
 
-**Resultado (362 freguesias, 84 positivas, prevalência 0,23; `ai/validation/static_backtest.py`):**
+**Resultado (562 freguesias, 177 positivas, prevalência 0.31; 13 áreas; `ai/validation/static_backtest.py`):**
 
 | Variável | ROC-AUC | PR-AUC | IC 95 % (bootstrap por AOI) |
 |---|---|---|---|
-| IAS estrutural (score) | 0,909 | 0,72 | 0,68–0,92 |
-| IAS estrutural (classe 1–5) | 0,901 | 0,72 | 0,72–0,92 |
-| Fração em zona APA T100 | 0,912 | 0,78 | 0,69–0,93 |
-| Fração em zona APA T1000 | 0,902 | 0,77 | 0,69–0,92 |
-| HAND < 5 m | 0,791 | 0,63 | 0,60–0,85 |
-| Proximidade de rio (300 m) | 0,688 | 0,37 | 0,52–0,73 |
+| IAS estrutural (score) | 0.88 | 0.73 | 0.77–0.91 |
+| IAS estrutural (classe 1–5) | 0.87 | 0.72 | 0.76–0.90 |
+| Fração em zona APA T100 | 0.86 | 0.79 | 0.74–0.91 |
+| Fração em zona APA T1000 | 0.85 | 0.78 | 0.74–0.91 |
+| HAND < 5 m | 0.78 | 0.66 | 0.68–0.81 |
+| Proximidade de rio (300 m) | 0.68 | 0.42 | 0.54–0.72 |
 
 **Leitura.**
-- A componente estrutural discrimina bem no Mondego (AUC ≈ 0,9 em EMSR861-Coimbra; 0,73–0,84 em EMSR864-Coimbra), mas isto é um diagnóstico descritivo, não validação independente: dois eventos meteorológicos, Mondego domina e os dois eventos sobrepõem-se geograficamente.
-- A fração em zona APA T100 sozinha iguala ou supera o score composto (AUC 0,912 vs 0,909; PR-AUC 0,78 vs 0,72): a combinação com HAND e rio não acrescenta valor nestes dados. A proximidade de rio é a variável mais fraca.
-- Onde não há zona APA (Tomar, Mértola) a componente falha (AUC 0,0–0,4, com 1–2 freguesias positivas): o IAS estrutural depende da cobertura APA.
-- Não foi possível retroanalisar a ativação em tempo real (componente dinâmica): o `floodwatch.json` dessas datas não está no repositório (os artefactos do CI têm retenção de 30 dias) e a chuva observada de jan.–fev. 2026 não está acessível a partir deste ambiente.
-- Portão de treino (≥10 eventos positivos, ≥4 bacias, ≥200 negativos observados): **continua por cumprir** (3 eventos; negativos observados 0). Não se treinou RF/XGBoost.
+- Com mais bacias (Mondego, Tejo, Sado, Vouga, Cávado, Lima, Tâmega, Mira…) a componente estrutural mantém discriminação útil (AUC 0,88; AUC por área entre 0,67 e 1,0 nas áreas com ≥5 freguesias), mas é diagnóstico descritivo, não validação independente: são só dois eventos meteorológicos e as áreas foram escolhidas pelo Copernicus por terem cheia (viés de seleção).
+- A fração em zona APA T100 sozinha tem PR-AUC igual ou superior ao score composto (0,79 vs 0,73) e AUC ligeiramente inferior (0,86 vs 0,88): HAND e rio acrescentam pouco ou nada de forma consistente. A proximidade de rio é a variável mais fraca.
+- Onde não há zona APA (Tomar, Mértola) a componente falha (poucos positivos: 1–2).
+- Não foi possível retroanalisar a ativação em tempo real (componente dinâmica): o `floodwatch.json` dessas datas não está guardado e a chuva observada de jan.–fev. 2026 não está acessível a partir deste ambiente.
+- Portão de treino (≥10 eventos, ≥4 bacias, ≥200 negativos observados): bacias já ≥4, mas **eventos = 2 e negativos observados = 0**. Não se treinou RF/XGBoost.

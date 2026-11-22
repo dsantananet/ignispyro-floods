@@ -5,6 +5,16 @@
  "warning": "y=0 = sem cheia detetada, não seco confirmado",
  "packages": [
   {
+   "product": "EMSR864_AOI06_DEL_PRODUCT",
+   "sha256": "d39bc8c7e033714af7bab1817a63e4f2159721e1942d0632e4851b0f513c0bb6",
+   "bytes": 25578413
+  },
+  {
+   "product": "EMSR864_AOI03_DEL_PRODUCT",
+   "sha256": "09a332bc01563a3e3786f36b983f77d98be003d47bd64a44950e1bb57fd6639a",
+   "bytes": 29713605
+  },
+  {
    "product": "EMSR861_AOI05_DEL_PRODUCT",
    "sha256": "efd968fa7094e225b892e075c7b80afc7d7496d7a61746cf859d5803b66d7456",
    "bytes": 13835792
@@ -13,6 +23,16 @@
    "product": "EMSR864_AOI01_DEL_PRODUCT",
    "sha256": "41c040d1be32824fbcb3704ae8a42c1761e0810c3f8f7f0641a97f9cd8f301aa",
    "bytes": 6863066
+  },
+  {
+   "product": "EMSR864_AOI02_DEL_PRODUCT",
+   "sha256": "0397397a409cc44e9e25dbc245fc3137563efb91b0b059e2f58930e6d63480b8",
+   "bytes": 8452345
+  },
+  {
+   "product": "EMSR864_AOI11_DEL_PRODUCT",
+   "sha256": "9e222108f8f9eae6b031e8c938c377609284a98b2f1010f9e3c5960041b97690",
+   "bytes": 12825286
   },
   {
    "product": "EMSR864_AOI05_DEL_MONIT02",
@@ -35,9 +55,24 @@
    "bytes": 13783630
   },
   {
+   "product": "EMSR864_AOI17_DEL_PRODUCT",
+   "sha256": "f61a3ff680a6fa88b18d77aaac5ee650d4eee647e9fab23a2fc480701009d0ff",
+   "bytes": 16049988
+  },
+  {
+   "product": "EMSR864_AOI18_DEL_PRODUCT",
+   "sha256": "6bed31cd09756f55d893e2f758f187e2f206818d65d016a2b1ed57ee9f8a952a",
+   "bytes": 7949029
+  },
+  {
    "product": "EMSR864_AOI04_DEL_PRODUCT",
    "sha256": "beb380cacb3c1c2ef84510497b8cde74cccdb07d86e694d79da43176b1fac9cd",
    "bytes": 10913023
+  },
+  {
+   "product": "EMSR864_AOI13_DEL_PRODUCT",
+   "sha256": "4d96e52fca55a4549f2feab13685126d91fd48bd69d8e38210ad6634b3a0adf4",
+   "bytes": 15277771
   },
   {
    "product": "EMSR864_AOI15_DEL_MONIT01",
@@ -78,6 +113,11 @@
    "product": "EMSR864_AOI14_DEL_MONIT01",
    "sha256": "2c96ac7a9557cff14aabbbd86ed81a7a985ae86bf07a2d8120a1a643e456ead4",
    "bytes": 16668713
+  },
+  {
+   "product": "EMSR864_AOI12_DEL_PRODUCT",
+   "sha256": "a83c31387d1bc976feaa0451dca84160867ffef755ae488351a6ddc0cd162d4b",
+   "bytes": 15650006
   }
  ]
 }
