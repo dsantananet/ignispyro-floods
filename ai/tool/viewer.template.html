@@ -45,8 +45,8 @@ const DATA=/*DATA*/null, MODEL=/*MODEL*/null;
 const LAY={observado_sar_2019:{n:"Observado SAR 23/12/2019 (EMSR417)",c:"#d9480f",o:.6},
  simulado_piloto_2019:{n:"Simulado piloto 23/12/2019 (não calibrado)",c:"#1971c2",o:.5},
  dominio_piloto:{n:"Domínio do piloto (30 m)",c:"#868e96",o:.12}};
-const map=new maplibre.Map({container:"map",style:{version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap"}},layers:[{id:"osm",type:"raster",source:"osm"}]},center:[-8.43,40.2],zoom:11});
-map.addControl(new maplibre.NavigationControl());
+const map=new maplibregl.Map({container:"map",style:{version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap"}},layers:[{id:"osm",type:"raster",source:"osm"}]},center:[-8.43,40.2],zoom:11});
+map.addControl(new maplibregl.NavigationControl());
 const lay=document.getElementById("layers");
 map.on("load",()=>{
  Object.keys(LAY).forEach(k=>{const L=LAY[k];
@@ -54,9 +54,9 @@ map.on("load",()=>{
   map.addLayer({id:k,type:"fill",source:k,paint:{"fill-color":L.c,"fill-opacity":L.o,"fill-outline-color":L.c}});
   const r=document.createElement("label");r.className="row";r.innerHTML=`<input type="checkbox" checked><span class="sw" style="background:${L.c}"></span>${L.n}`;
   r.firstChild.onchange=e=>map.setLayoutProperty(k,"visibility",e.target.checked?"visible":"none");lay.append(r);
-  map.on("click",k,e=>new maplibre.Popup().setLngLat(e.lngLat).setHTML(`<b>${L.n}</b><br>Natureza: ${e.features[0].properties.natureza}<br><b>${e.features[0].properties.estado}</b>`).addTo(map));});
+  map.on("click",k,e=>new maplibregl.Popup().setLngLat(e.lngLat).setHTML(`<b>${L.n}</b><br>Natureza: ${e.features[0].properties.natureza}<br><b>${e.features[0].properties.estado}</b>`).addTo(map));});
  if(MODEL){map.addSource("model",{type:"geojson",data:MODEL});map.addLayer({id:"model",type:"fill",source:"model",paint:{"fill-color":"#7048e8","fill-opacity":.5}});}
- const b=new maplibre.LngLatBounds();DATA.features.forEach(f=>{const w=g=>Array.isArray(g[0])?g.forEach(w):b.extend(g);w(f.geometry.coordinates)});map.fitBounds(b,{padding:40,maxZoom:13});
+ const b=new maplibregl.LngLatBounds();DATA.features.forEach(f=>{const w=g=>Array.isArray(g[0])?g.forEach(w):b.extend(g);w(f.geometry.coordinates)});map.fitBounds(b,{padding:40,maxZoom:13});
 });
 const G=[["Eventos positivos independentes (≥ N a fixar)","1 confirmado + 2 candidatos (EMSR861, EMSR864) por obter","no"],["Negativos observados fiáveis","0","no"],["Validação por evento/bacia","impossível (1 evento)","no"],["Baseline IAS e logística definidos","IAS existe; logística por fazer","na"],["Inventário de licenças","preliminar (sources.json)","na"],["Critérios de aceitação fixados antes do teste","por fazer","na"],["Modelo RF/XGBoost vs. baseline","não treinado","no"],["Aprovação do responsável","não","no"]];
 document.getElementById("gates").innerHTML="<tr><th>Critério</th><th>Estado</th></tr>"+G.map(g=>`<tr><td>${g[0]}</td><td class="${g[2]}">${g[1]}</td></tr>`).join("");
