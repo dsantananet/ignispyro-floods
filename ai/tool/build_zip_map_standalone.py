@@ -1,11 +1,15 @@
 """Gera uma versão autónoma de zip-flood-map.html com maplibre-gl e shpjs embebidos (funciona em pré-visualizações que bloqueiam scripts externos).
-Uso: npm i maplibre-gl@4.7.1 shpjs@6.1.0 (num diretório) e python ai/tool/build_zip_map_standalone.py DIR_NODE_MODULES SAIDA.html
+Uso (a partir da raiz do repositório): npm i maplibre-gl@4.7.1 shpjs@6.1.0 (num diretório) e python ai/tool/build_zip_map_standalone.py DIR_NODE_MODULES SAIDA.html [LOGO.png]
 O resultado não é guardado no repositório (≈1 MB, código de terceiros)."""
 import pathlib, re, sys
 nm = pathlib.Path(sys.argv[1]); out = pathlib.Path(sys.argv[2]); src = pathlib.Path(__file__).with_name('zip-flood-map.html').read_text(encoding='utf-8')
 rd = lambda p: (nm / p).read_text(encoding='utf-8')
 safe = lambda js: js.replace('</script', '<\\/script')
 css = rd('maplibre-gl/dist/maplibre-gl.css'); ml = safe(rd('maplibre-gl/dist/maplibre-gl.js')); sh = safe(rd('shpjs/dist/shp.min.js'))
+import base64, io
+from PIL import Image
+im = Image.open(pathlib.Path(sys.argv[3]) if len(sys.argv) > 3 else pathlib.Path('dist/assets/ignispyro-oficial.png')).convert('RGB'); im.thumbnail((520, 520)); b = io.BytesIO(); im.save(b, 'PNG', optimize=True)
+src = src.replace('{{LOGO}}', 'data:image/png;base64,' + base64.b64encode(b.getvalue()).decode())
 src = re.sub(r'<link href="https://unpkg.com/maplibre-gl@[^"]+" rel="stylesheet">', lambda m: '<style>' + css + '</style>', src)
 src = re.sub(r'<script src="https://unpkg.com/maplibre-gl@[^"]+"></script>', lambda m: '<script>' + ml + '</script>', src)
 src = re.sub(r'<script src="https://unpkg.com/shpjs@[^"]+"></script>', lambda m: '<script>' + sh + '</script>', src)

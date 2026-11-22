@@ -6,18 +6,19 @@
 <script src="https://unpkg.com/shpjs@6.1.0/dist/shp.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,sans-serif;display:grid;grid-template-columns:400px 1fr;height:100vh;color:#1b2430}
-aside{overflow:auto;padding:14px;border-right:1px solid #d5dbe3;background:#f7f9fb}main{position:relative}#map{height:100%}
-h1{font-size:17px;margin:0 0 4px}h2{font-size:14px;margin:14px 0 6px}.banner,#mapmark{background:#b42318;color:#fff;padding:6px 10px;font-weight:700;border-radius:4px;font-size:12px}
+aside{overflow:auto;padding:14px;border-right:1px solid #b9d3e4;background:#eef6fb}.logo{display:block;width:100%;max-width:300px;margin:0 0 8px}main{position:relative}#map{height:100%}
+h1{font-size:17px;margin:0 0 4px;color:#0a3d62}h2{font-size:14px;margin:14px 0 6px;color:#0a3d62;border-bottom:2px solid #1e9fb0;padding-bottom:2px}.banner,#mapmark{background:#b42318;color:#fff;padding:6px 10px;font-weight:700;border-radius:4px;font-size:12px}
 .banner{margin-bottom:10px}#mapmark{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2}
-#drop{border:2px dashed #8896a8;border-radius:8px;padding:18px;text-align:center;background:#fff;cursor:pointer}#drop.on{background:#e8f1ff;border-color:#2563eb}
-.card{background:#fff;border:1px solid #d5dbe3;border-radius:6px;padding:8px 10px;margin:6px 0}.row{display:flex;gap:8px;align-items:center;margin:3px 0}
+#drop{border:2px dashed #1e7fae;border-radius:8px;padding:18px;text-align:center;background:#fff;cursor:pointer;color:#0a3d62}#drop.on{background:#d9eefa;border-color:#0a3d62}
+.card{background:#fff;border:1px solid #b9d3e4;border-radius:6px;padding:8px 10px;margin:6px 0}.row{display:flex;gap:8px;align-items:center;margin:3px 0}
 .sw{width:14px;height:14px;border-radius:3px;border:1px solid #0004}small{color:#566}table{border-collapse:collapse;width:100%;font-size:12px}
 td,th{padding:2px 4px;border-bottom:1px solid #e5e9ef;text-align:right}td:first-child,th:first-child{text-align:left}tr.c:hover{background:#eef4ff;cursor:pointer}
-button{background:#0f172a;color:#fff;border:0;border-radius:6px;padding:6px 12px;cursor:pointer}
+button{background:#0a3d62;color:#fff;border:0;border-radius:6px;padding:6px 12px;cursor:pointer}
 @media(max-width:800px){body{grid-template-columns:1fr;grid-template-rows:55vh 1fr}}
 </style></head><body>
 <aside>
 <div class="banner">EXPERIMENTAL — NÃO OPERACIONAL</div>
+<a href="https://ignispyro.pt" target="_blank" rel="noopener"><img class="logo" src="{{LOGO}}" alt="IGNISPYRO"></a>
 <h1>Floods AI · ZIP Copernicus → mapa</h1>
 <small>Carregue um ou mais pacotes de delineação do Copernicus EMS Rapid Mapping (<code>EMSRxxx_AOIyy_DEL_…zip</code>). Tudo corre neste browser: nada é enviado para fora (só são lidos os dados públicos do Floods).</small>
 <div id="drop" style="margin-top:10px">Largue aqui o(s) ficheiro(s) ZIP<br>ou clique para escolher <small>(aceita qualquer ficheiro ZIP, mesmo sem extensão .zip)</small><input id="file" type="file" multiple hidden></div>
@@ -25,18 +26,21 @@ button{background:#0f172a;color:#fff;border:0;border-radius:6px;padding:6px 12px
 <h2>Camadas</h2>
 <div class="card"><label class="row"><input type="radio" name="col" value="flood" checked> Freguesias coloridas por % inundada</label>
 <label class="row"><input type="radio" name="col" value="ias"> Freguesias coloridas pelo IAS estrutural (Floods)</label>
+<label class="row">Mapa base: <select id="base"><option value="claro">Claro (CARTO)</option><option value="satelite">Satélite (Esri)</option></select></label>
 <label class="row"><input type="checkbox" id="tFlood" checked> Mancha de cheia observada (Copernicus)</label>
 <label class="row"><input type="checkbox" id="tAoi" checked> Área de interesse (AOI)</label></div>
 <div id="legend"></div>
 <h2>Resultado</h2><div class="card" id="res"><small>—</small></div>
 <h2>Freguesias (maior cheia primeiro)</h2><div class="card" id="tab"><small>—</small></div>
-<small>Cheia observada por SAR (delineação Copernicus EMS). Sem cheia detetada ≠ seco. © União Europeia, Copernicus EMS; IGNISPYRO Floods (CAOP2025, APA); © OpenStreetMap.</small>
+<small>Cheia observada por SAR (delineação Copernicus EMS). Sem cheia detetada ≠ seco. © União Europeia, Copernicus EMS; IGNISPYRO Floods (CAOP2025, APA); © OpenStreetMap, CARTO, Esri.</small>
 </aside>
 <main><div id="mapmark">EXPERIMENTAL — NÃO OPERACIONAL</div><div id="map"></div></main>
 <script>
 const $=id=>document.getElementById(id), FL='https://dsantananet.github.io/ignispyro-floods/data/';
 const IASC=['#9aa9ad','#4fae7b','#e3c941','#ee9b3d','#d9503f','#8e2f78'];
-const map=new maplibregl.Map({container:'map',center:[-8.1,39.6],zoom:6,style:{version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap'}},layers:[{id:'osm',type:'raster',source:'osm'}]}});
+const BASES={claro:{t:['a','b','c','d'].map(x=>`https://${x}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png`),a:'© OpenStreetMap, © CARTO'},
+ satelite:{t:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],a:'Esri, Maxar, Earthstar Geographics'}};
+const map=new maplibregl.Map({container:'map',center:[-8.1,39.6],zoom:6,style:{version:8,sources:{claro:{type:'raster',tiles:BASES.claro.t,tileSize:256,attribution:BASES.claro.a},satelite:{type:'raster',tiles:BASES.satelite.t,tileSize:256,attribution:BASES.satelite.a}},layers:[{id:'b-claro',type:'raster',source:'claro'},{id:'b-satelite',type:'raster',source:'satelite',layout:{visibility:'none'}}]}});
 let ctx={par:null,sus:null,ter:null,fw:null},mapReady=new Promise(r=>map.on('load',r));
 const say=t=>$('status').textContent=t;
 async function loadCtx(){if(ctx.par)return;say('A obter freguesias e IAS do Floods…');
@@ -92,7 +96,7 @@ async function draw(flood,aoi){await mapReady;const fc=a=>({type:'FeatureCollect
  const par={type:'FeatureCollection',features:ctx.par.filter(p=>p.properties._in).map(p=>({type:'Feature',properties:{_pct:p.properties._pct,_s:p.properties._s,n:p.properties.freguesia},geometry:p.geometry}))};
  for(const [id,data] of [['par',par],['flood',fc(flood)],['aoi',fc(aoi)]]){if(map.getSource(id))map.getSource(id).setData(data);else map.addSource(id,{type:'geojson',data})}
  if(!map.getLayer('par-f')){map.addLayer({id:'par-f',type:'fill',source:'par',paint:{'fill-opacity':0.55}});map.addLayer({id:'par-l',type:'line',source:'par',paint:{'line-color':'#334155','line-width':0.6}});
-  map.addLayer({id:'flood',type:'fill',source:'flood',paint:{'fill-color':'#1d4ed8','fill-opacity':0.8}});map.addLayer({id:'aoi',type:'line',source:'aoi',paint:{'line-color':'#111','line-width':2,'line-dasharray':[3,2]}});
+  map.addLayer({id:'flood',type:'fill',source:'flood',paint:{'fill-color':'#0b6fa4','fill-opacity':0.8}});map.addLayer({id:'aoi',type:'line',source:'aoi',paint:{'line-color':'#111','line-width':2,'line-dasharray':[3,2]}});
   map.on('click','par-f',e=>{const p=e.features[0].properties;new maplibregl.Popup().setLngLat(e.lngLat).setHTML(`<b>${p.n}</b><br>${(p._pct*100).toFixed(1)} % inundada · IAS estr. ${p._s}`).addTo(map)})}
  colour();const b=aoi.reduce((a,f)=>[Math.min(a[0],f._bb[0]),Math.min(a[1],f._bb[1]),Math.max(a[2],f._bb[2]),Math.max(a[3],f._bb[3])],[1e9,1e9,-1e9,-1e9]);map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:40})}
 function colour(){if(!map.getLayer('par-f'))return;const m=document.querySelector('input[name=col]:checked').value;
@@ -102,6 +106,7 @@ function colour(){if(!map.getLayer('par-f'))return;const m=document.querySelecto
   $('legend').innerHTML=['Sem dados','Baixa','Moderada','Elevada','Muito elevada','Crítica'].map((n,i)=>`<div class="row"><span class="sw" style="background:${IASC[i]}"></span>IAS estrutural: ${n}</div>`).join('')}
  map.setLayoutProperty('flood','visibility',$('tFlood').checked?'visible':'none');map.setLayoutProperty('aoi','visibility',$('tAoi').checked?'visible':'none')}
 document.querySelectorAll('input[name=col],#tFlood,#tAoi').forEach(e=>e.onchange=colour);
+$('base').onchange=()=>{const v=$('base').value;for(const k of ['claro','satelite'])map.setLayoutProperty('b-'+k,'visibility',k===v?'visible':'none')};
 async function fromFiles(list){const all=[...list];if(!all.length)return say('Nenhum ficheiro recebido.');
  if(typeof shp==='undefined'||typeof maplibregl==='undefined')return say('Erro: não foi possível carregar as bibliotecas (shpjs/maplibre) — verifique a ligação à Internet e recarregue a página.');
  const out=[],skip=[];for(const f of all){say('A ler '+f.name+'…');const buf=await f.arrayBuffer(),h=new Uint8Array(buf.slice(0,4));
