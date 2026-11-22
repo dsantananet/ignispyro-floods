@@ -14,94 +14,51 @@ h1{font-size:17px;margin:0 0 4px}h2{font-size:14px;margin:14px 0 6px}.banner,#ma
 </style></head><body>
 <aside>
 <div class="banner">EXPERIMENTAL — NÃO OPERACIONAL</div>
-<h1>IGNISPYRO Floods · Suscetibilidade</h1>
-<small>Suscetibilidade relativa por freguesia, calculada no navegador com os dados em tempo real do Floods. Não é probabilidade, previsão, aviso nem mancha de inundação.</small>
+<h1>IGNISPYRO Floods · Susceptibility</h1>
+<small>Mostra o índice de ativação de suscetibilidade (IAS) do Floods, recalculado de 15 em 15 min, e reserva uma camada para o modelo de IA. Não é probabilidade, previsão, aviso nem mancha de inundação.</small>
+<h2>Camada</h2>
+<div class="card"><label class="row"><input type="radio" name="lay" value="ias" checked> IAS do Floods (baseline)</label>
+<label class="row"><input type="radio" name="lay" value="ai" id="aiRadio" disabled> IA (experimental) <small id="aiNote">— sem modelo validado</small></label></div>
 <h2>Estado</h2><div class="card" id="status">A carregar…</div>
 <h2>Legenda</h2><div id="legend"></div>
-<h2>Modelo</h2>
-<div class="card"><b>rules-v0 · não aprendido.</b> Dinâmica = chuva observada/estimada (24 h e 6 h) vs. P99 diário ERA5 da bacia; estática = zonas APA T20/T100/T1000, proximidade de rios e HAND&lt;5 m. Pesos fixados à mão, sem calibração. A camada de IA só substitui estas regras depois de validada em eventos independentes (ver <code>docs/FLOODS_AI_EVALUATION.md</code>).</div>
 <h2>Freguesia</h2><div class="card" id="detail">Clique numa freguesia.</div>
+<h2>Como se calcula o IAS</h2>
+<div class="card"><small>Matriz [suscetibilidade estrutural 1–5 (zonas APA, rios, HAND) × ativação da bacia 1–4 (chuva 1/6/24 h, escoamento SCS-CN, previsão, albufeiras, níveis a subir)]. Pesos de especialista, não ajustados. Dados com mais de 3 h anulam a bacia; índice com mais de 12 h suspende as cores.</small></div>
+<h2>Camada de IA</h2>
+<div class="card"><small>Só será ativada com um modelo validado em eventos independentes e a melhorar o IAS (ver <code>docs/FLOODS_AI_EVALUATION.md</code>). Lê <code>ai-susceptibility.json</code> (<code>{"parishes":{"&lt;dtmnfr&gt;":{"a":0-5}}}</code>) se existir.</small></div>
 <h2>Fonte dos dados</h2>
-<div class="card"><label>Base de dados Floods<input type="text" id="base"></label><small>Por omissão o Floods publicado; use <code>?base=URL/</code> para outra origem.</small></div>
-<small>Dados: IGNISPYRO Floods (IPMA, APA/SNIRH, ECMWF/ERA5, CAOP2025, INE BGRI2021). © OpenStreetMap.</small>
+<div class="card"><input type="text" id="base" readonly><small>Use <code>?base=URL/</code> para outra origem.</small></div>
+<small>Dados: IGNISPYRO Floods (IPMA, APA/SNIRH, ECMWF, CAOP2025, INE BGRI2021). © OpenStreetMap.</small>
 </aside>
 <main><div id="mapmark">EXPERIMENTAL — NÃO OPERACIONAL</div><div id="map"></div></main>
-<script>/* Floods AI — suscetibilidade em tempo real (v0: regras declaradas, NÃO aprendido).
-   EXPERIMENTAL — NÃO OPERACIONAL. Não é probabilidade, nem aviso, nem previsão de inundação.
-   score = dinâmica(chuva observada vs. climatologia ERA5 da bacia) × (0,3 + 0,7 × estática da freguesia)
-   O módulo aceita pesos aprendidos (weights) quando existir um modelo validado; hoje weights = null. */
-(function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(); else root.FloodsSusc = factory();
-})(typeof self !== 'undefined' ? self : this, function () {
-  const MODEL = { id: 'rules-v0', learned: false, status: 'EXPERIMENTAL — NÃO OPERACIONAL' };
-  const CLASSES = [
-    { key: 'verde', label: 'Verde · baixa', color: '#2f9e44', max: 0.25 },
-    { key: 'amarelo', label: 'Amarelo · moderada', color: '#f2c200', max: 0.5 },
-    { key: 'laranja', label: 'Laranja · elevada', color: '#f08c00', max: 0.75 },
-    { key: 'vermelho', label: 'Vermelho · muito elevada', color: '#e03131', max: Infinity }
-  ];
-  const NODATA = { key: 'sem_dados', label: 'Sem dados / desatualizado', color: '#adb5bd' };
-  const MAX_AGE_H = 3;
-  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-
-  function classify(score) { return score == null ? NODATA : CLASSES.find(c => score < c.max); }
-
-  // estática da freguesia: fracções APA T20/T100/T1000, proximidade de rios, HAND<5 m
-  function staticScore(sus, terr) {
-    if (!sus && !terr) return null;
-    const s = sus || {}, t = terr || {};
-    return clamp(Math.max(
-      (s.f20 || 0) * 1.0, (s.f100 || 0) * 0.7, (s.f1000 || 0) * 0.4,
-      (s.river300 || 0) * 0.5, (t.hand_lt5_frac || 0) * 0.5));
-  }
-
-  // dinâmica da bacia: chuva observada/estimada em 24 h vs. P99 diário ERA5 (10 anos) da própria bacia
-  function dynamicScore(sim, hist, now) {
-    if (!sim || !hist || !hist.daily_p99_mm) return { dyn: null, reason: 'sem simulação ou climatologia' };
-    const ageH = (now - Date.parse(sim.valid_time || sim.observed_at)) / 36e5;
-    if (!(ageH <= MAX_AGE_H)) return { dyn: null, reason: 'dados com mais de ' + MAX_AGE_H + ' h' };
-    const r24 = (sim.p24_mm ?? 0) / hist.daily_p99_mm;
-    const r6 = (sim.p6_mm ?? 0) / (0.6 * hist.daily_p99_mm);
-    return { dyn: clamp(Math.max(r24, r6)), ageH, modelled: !!sim.modelled_rainfall, p24: sim.p24_mm, p99: hist.daily_p99_mm };
-  }
-
-  function scoreParish({ sus, terr, basins }, now, weights = null) {
-    const st = staticScore(sus, terr);
-    const dyns = (basins || []).map(b => dynamicScore(b.sim, b.hist, now)).filter(d => d.dyn != null);
-    if (st == null || !dyns.length) return { score: null, cls: NODATA, static: st, dynamic: null };
-    const dyn = Math.max(...dyns.map(d => d.dyn));
-    const w = weights || { base: 0.3, static: 0.7 };
-    const score = clamp(dyn * (w.base + w.static * st));
-    return { score, cls: classify(score), static: st, dynamic: dyn, modelled: dyns.some(d => d.modelled) };
-  }
-
-  return { MODEL, CLASSES, NODATA, MAX_AGE_H, classify, staticScore, dynamicScore, scoreParish };
-});
-</script>
 <script>
-const F=FloodsSusc,$=id=>document.getElementById(id);
-const BASE=new URLSearchParams(location.search).get('base')||'https://dsantananet.github.io/ignispyro-floods/data/';
+const $=id=>document.getElementById(id);
+const FLOODS_URL='https://dsantananet.github.io/ignispyro-floods/data/';
+const BASE=new URLSearchParams(location.search).get('base')||(location.pathname.includes('/susceptibility/')?'../data/':FLOODS_URL);
 $('base').value=BASE;
-$('legend').innerHTML=[...F.CLASSES,F.NODATA].map(c=>`<div class="row"><span class="sw" style="background:${c.color}"></span>${c.label}</div>`).join('');
-async function getJSON(f){const r=await fetch(BASE+f);if(!r.ok)throw new Error(f+' '+r.status);return r.json();}
-async function getGeo(){ // tenta .gz (menor), depois .geojson
- try{const r=await fetch(BASE+'parishes.geojson.gz');if(r.ok&&self.DecompressionStream){const s=r.body.pipeThrough(new DecompressionStream('gzip'));return JSON.parse(await new Response(s).text());}}catch(e){}
- return getJSON('parishes.geojson');}
+const NAMES=['Sem dados','Baixa','Moderada','Elevada','Muito elevada','Crítica'],COLORS=['#9aa9ad','#4fae7b','#e3c941','#ee9b3d','#d9503f','#8e2f78'];
+$('legend').innerHTML=NAMES.map((n,i)=>`<div class="row"><span class="sw" style="background:${COLORS[i]}"></span>${n}</div>`).join('');
+async function getJSON(f,opt){const r=await fetch(BASE+f+'?v='+Math.floor(Date.now()/60000));if(!r.ok){if(opt)return null;throw new Error(f+' '+r.status);}return r.json();}
+async function getGeo(){try{const r=await fetch(BASE+'parishes.geojson.gz');if(r.ok&&self.DecompressionStream)return JSON.parse(await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text());}catch(e){}return getJSON('parishes.geojson');}
 const map=new maplibregl.Map({container:'map',style:{version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap'}},layers:[{id:'osm',type:'raster',source:'osm'}]},center:[-8.2,39.6],zoom:6});
 map.addControl(new maplibregl.NavigationControl());
+let geo,watch,ai,suspended=false,mode='ias';
+const cls=(p,m)=>{if(suspended)return 0;const src=m==='ai'?ai?.parishes?.[p.dtmnfr]:watch.parishes[p.dtmnfr];return src&&Number.isInteger(src.a)?src.a:0;};
+function paint(){geo.features.forEach(f=>{f.properties._c=COLORS[cls(f.properties,mode)];});map.getSource('p')?.setData(geo);}
+document.querySelectorAll('input[name=lay]').forEach(r=>r.onchange=e=>{mode=e.target.value;paint();});
 (async()=>{try{
- const [simF,histF,susF,terF,geo]=await Promise.all([getJSON('simulation.json'),getJSON('history.json'),getJSON('susceptibility.json'),getJSON('terrain-susceptibility.json'),getGeo()]);
- const sim=new Map(simF.basins.map(b=>[b.id,b])),hist=new Map(histF.basins.map(b=>[b.id,b])),now=Date.now(),counts={};
- geo.features.forEach(f=>{const p=f.properties,basins=(p.basin_ids||[]).map(id=>({sim:sim.get(id),hist:hist.get(id)}));
-  const r=F.scoreParish({sus:susF.parishes[p.dtmnfr],terr:terF.parishes[p.dtmnfr],basins},now);
-  p._color=r.cls.color;p._cls=r.cls.label;p._score=r.score;p._st=r.static;p._dyn=r.dynamic;p._mod=r.modelled?1:0;counts[r.cls.key]=(counts[r.cls.key]||0)+1;});
- const age=((now-Date.parse(simF.inputs_retrieved_at))/36e5).toFixed(1);
- $('status').innerHTML=`Entradas recolhidas: <b>${simF.inputs_retrieved_at}</b> (há ${age} h).<br>`+Object.entries(counts).map(([k,v])=>`${k}: ${v}`).join(' · ')+(age>F.MAX_AGE_H?`<br><b style="color:#b42318">Dados com mais de ${F.MAX_AGE_H} h: freguesias a cinzento.</b>`:'');
- const add=()=>{map.addSource('p',{type:'geojson',data:geo});
-  map.addLayer({id:'p-fill',type:'fill',source:'p',paint:{'fill-color':['get','_color'],'fill-opacity':.6}});
+ [watch,geo,ai]=await Promise.all([getJSON('floodwatch.json'),getGeo(),getJSON('ai-susceptibility.json',true)]);
+ if(watch.schema_version!=='floods-watch/1')throw new Error('esquema floodwatch inesperado');
+ const age=(Date.now()-Date.parse(watch.computed_at))/36e5;suspended=age>12;
+ if(ai?.parishes){$('aiRadio').disabled=false;$('aiNote').textContent='— modelo carregado';}
+ const counts=Object.entries(watch.summary.parishes_by_class).filter(([,v])=>v).map(([k,v])=>`${k}: ${v}`).join(' · ');
+ $('status').innerHTML=`IAS calculado em <b>${watch.computed_at}</b> (há ${age.toFixed(1)} h).<br>${counts}`+(suspended?'<br><b style="color:#b42318">Índice com mais de 12 h: cores suspensas.</b>':age>watch.valid_for_hours?'<br><b style="color:#b54708">Mais de '+watch.valid_for_hours+' h: dados possivelmente desatualizados.</b>':'');
+ const add=()=>{geo.features.forEach(f=>{f.properties._c=COLORS[cls(f.properties,mode)];});
+  map.addSource('p',{type:'geojson',data:geo});
+  map.addLayer({id:'p-fill',type:'fill',source:'p',paint:{'fill-color':['get','_c'],'fill-opacity':.65}});
   map.addLayer({id:'p-line',type:'line',source:'p',paint:{'line-color':'#444','line-width':.3}});
-  map.on('click','p-fill',e=>{const p=e.features[0].properties,f=x=>x==null||x==='null'?'—':(+x).toFixed(2);
-   $('detail').innerHTML=`<b>${p.freguesia}</b> (${p.municipio})<br>${p._cls}<br>Score: ${f(p._score)} · estática ${f(p._st)} · dinâmica ${f(p._dyn)}${p._mod==1?'<br><small>Chuva estimada por modelo (sem estações suficientes).</small>':''}`;});};
+  map.on('click','p-fill',e=>{const p=e.features[0].properties,w=watch.parishes[p.dtmnfr]||{},a=cls(p,mode);
+   $('detail').innerHTML=`<b>${p.freguesia}</b> (${p.municipio})<br>${mode==='ai'?'IA':'IAS'}: <b>${NAMES[a]}</b><br><small>Estrutural ${w.s??'—'}/5 · ativação ${w.t??'—'}/4${w.bump?' (+1 albufeira/nível)':''}${w.pz!=null?'<br>Residentes em zona T100 (estimativa por área): '+Math.round(w.pz):''}</small>`;});};
  map.loaded()?add():map.on('load',add);
-}catch(e){$('status').innerHTML='<b style="color:#b42318">Falha ao carregar dados:</b> '+e.message+'<br><small>Sem dados não se mostra suscetibilidade.</small>';}})();
+}catch(e){$('status').innerHTML='<b style="color:#b42318">Falha ao carregar:</b> '+e.message+'<br><small>Sem dados não se mostra suscetibilidade.</small>';}})();
 </script></body></html>

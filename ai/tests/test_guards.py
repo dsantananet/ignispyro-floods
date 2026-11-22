@@ -49,6 +49,15 @@ class Manifest(unittest.TestCase):
             self.assertIn(s["nature"], {"observado", "estimado", "modelo", "derivado"})
 
 
+class SusceptibilityPage(unittest.TestCase):
+    def test_page_uses_real_ias_and_is_marked(self):
+        h = (ROOT / "ai/susceptibility/index.html").read_text(encoding="utf-8")
+        self.assertIn("floodwatch.json", h)
+        self.assertIn("EXPERIMENTAL — NÃO OPERACIONAL", h)
+        self.assertIn("maplibregl.Map", h)
+        self.assertNotIn("maplibre.Map", h)
+
+
 if __name__ == "__main__":
     unittest.main()
 

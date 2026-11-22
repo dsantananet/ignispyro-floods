@@ -26,7 +26,7 @@ Camada para ArcGIS Online: `ai/tool/layers/floods-ai-evidence.geojson` (Adiciona
 Não há GitHub Pages nem alterações ao portal: a associação ao Floods só depois de o painel mostrar valor.
 
 ## Suscetibilidade em tempo real (`ai/susceptibility/`)
-Plataforma HTML independente (`index.html`): colore as freguesias a verde/amarelo/laranja/vermelho com os dados em tempo real do Floods (`?base=URL/` para outra origem).
-Modelo atual: **regras v0, não aprendido** (`core.js`). A camada de IA só entra quando houver validação em eventos independentes.
-Tabela para ArcGIS Online (juntar a CAOP por `dtmnfr`): `node ai/susceptibility/build-layer.mjs [dirDados] [dirSaida]`.
-Regenerar o HTML: `python ai/susceptibility/build_viewer.py`. Testes: `node --test ai/tests/*.test.cjs`.
+O Floods já calcula o IAS em tempo real (`tools/floodwatch.cjs` → `floodwatch.json`, de 15 em 15 min). A plataforma `index.html` mostra-o por freguesia
+(verde/amarelo/laranja/vermelho/roxo) e reserva uma camada **IA** que só carrega `ai-susceptibility.json` quando existir um modelo validado.
+Não há modelo de IA nem regras próprias: o baseline é o IAS do Floods. `?base=URL/` muda a origem dos dados.
+Tabela para ArcGIS Online (juntar à CAOP por `dtmnfr`): `node ai/susceptibility/build-layer.mjs [floodwatch.json] [saida.csv]`.

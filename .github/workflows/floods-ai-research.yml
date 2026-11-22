@@ -16,10 +16,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
       - name: Guard tests
         run: python -m unittest discover -s ai/tests -v
-      - name: Susceptibility tests
-        run: node --test ai/tests/*.test.cjs
