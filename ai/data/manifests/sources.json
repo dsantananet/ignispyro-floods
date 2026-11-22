@@ -1,0 +1,16 @@
+{
+  "schema": "floods-ai-sources/1",
+  "updated": "2026-11-22",
+  "note": "Inventário preliminar da auditoria inicial. Licenças por confirmar antes de descarregar/armazenar/publicar.",
+  "sources": [
+    {"id": "emsr417-aoi01-v1", "name": "Copernicus EMS EMSR417 AOI01 delineação v1", "nature": "observado", "role": "rótulo positivo (parcial)", "coverage": "Mondego/Baixo Mondego, 23/12/2019 06:43 UTC", "resolution": "10 m nominal (Sentinel-1A)", "license": null, "status": "já usado no diagnóstico de 2019; não reutilizável para aceitação", "limitations": "SAR: ausência de deteção não prova seco; urbano/floresta; RMSE até 12,5 m"},
+    {"id": "apa-areas-inundaveis", "name": "APA cartografia de áreas inundáveis", "nature": "derivado", "role": "a avaliar (rótulo/baseline)", "coverage": null, "resolution": null, "license": null, "status": "por inventariar", "limitations": "identificar finalidade e período de retorno"},
+    {"id": "copernicus-ems-pt-outros", "name": "Outras ativações Copernicus EMS em Portugal", "nature": "observado", "role": "rótulos adicionais", "coverage": null, "resolution": null, "license": null, "status": "por inventariar", "limitations": null},
+    {"id": "snirh-telemetria", "name": "APA/SNIRH níveis, caudais, albufeiras", "nature": "observado", "role": "features", "coverage": "155 estações no catálogo", "resolution": null, "license": null, "status": "no repositório (dist/data/snirh-telemetry.json)", "limitations": "datum e lacunas"},
+    {"id": "ipma-precipitacao", "name": "IPMA precipitação observada", "nature": "observado", "role": "features", "coverage": null, "resolution": null, "license": null, "status": "por confirmar", "limitations": null},
+    {"id": "era5-glofas-history", "name": "Reanálise/histórico de modelo (dist/data/history.json)", "nature": "modelo", "role": "features (rotuladas como modelo)", "coverage": "28 nós de referência, 3653 datas", "resolution": "0,25°", "license": null, "status": "no repositório", "limitations": "não é observação de inundação"},
+    {"id": "copernicus-dem-glo30", "name": "Copernicus DEM GLO-30", "nature": "derivado", "role": "features de terreno", "coverage": null, "resolution": "30 m", "license": null, "status": "parcial em engine/terrain", "limitations": "datum EGM2008; artefactos do MDT"},
+    {"id": "ias-susceptibilidade", "name": "IAS / susceptibility.json", "nature": "derivado", "role": "baseline", "coverage": "3049 freguesias", "resolution": "freguesia", "license": null, "status": "no repositório", "limitations": "índice de rastreio, não verdade de referência"},
+    {"id": "dgt-caop-cos-ine-bgri", "name": "DGT CAOP/COS e INE BGRI", "nature": "observado", "role": "contexto/exposição", "coverage": null, "resolution": null, "license": null, "status": "parcial no repositório", "limitations": "épocas diferentes (CAOP2025/Censos2021)"}
+  ]
+}

@@ -1,0 +1,17 @@
+# Floods AI — investigação experimental
+
+**EXPERIMENTAL — NÃO OPERACIONAL.** Isolado do módulo Floods e do IGNISPYRO V2.
+Plano: ver `docs/FLOODS_AI_EVALUATION.md` (auditoria inicial e decisão).
+
+## Estado
+Modelação **interrompida**: dados atuais com 1 evento positivo independente (EMSR417, 2019) e 0 negativos fiáveis.
+Não há código de treino. Só há inventário de dados, testes de guarda e um workflow manual que corre esses testes.
+
+## Regras
+- Trabalhar só nesta branch; sem merge para `main` sem aprovação explícita.
+- Nada em `dist/`; resultados em `ai/outputs/` ou artefactos privados.
+- Sem NAS, SSH, Pages, deploy, agendamentos.
+- Todo o mapa/output leva a marca "EXPERIMENTAL — NÃO OPERACIONAL".
+
+## Testes de guarda
+`python -m unittest discover -s ai/tests`
