@@ -29,3 +29,15 @@ class Batch(unittest.TestCase):
         rows = G.run_group([(s, p) for p in ps], {('010101', 'S1')}, lambda *a, **k: FakeResp(200, stats))
         self.assertEqual(rows, [['010100', 'S1', '2026-02-08T06:34', 100, 0.25, 5]][:0] or rows)
         self.assertEqual([r[0] for r in rows], ['010100'])  # 010101 já feito
+
+
+class CollectorPage(unittest.TestCase):
+    def test_page_embeds_script_and_label(self):
+        import html
+        d = Path(__file__).resolve().parents[1] / "susceptibility"
+        page = (d / "gfm-collector.html").read_text(encoding="utf-8"); js = (d / "gfm-collector.js").read_text(encoding="utf-8")
+        self.assertIn(html.escape(js), page)
+        self.assertIn("EXPERIMENTAL — NÃO OPERACIONAL", page)
+        self.assertIn("EXPERIMENTAL — NÃO OPERACIONAL", js)
+        for forbidden in ("method: 'PUT'", "method: 'DELETE'", "localStorage", "XMLHttpRequest"):
+            self.assertNotIn(forbidden, js)

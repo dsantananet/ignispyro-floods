@@ -1,0 +1,94 @@
+<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GFM por freguesia — recolha no browser (EXPERIMENTAL)</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;max-width:820px;margin:24px auto;padding:0 16px;color:#0f172a}
+.tag{background:#f59e0b;padding:2px 8px;border-radius:4px;font-weight:700;font-size:12px}ol li{margin:10px 0}
+button,a.btn{background:#0f172a;color:#fff;border:0;border-radius:6px;padding:8px 14px;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block}
+textarea{width:100%;height:120px;font:11px monospace}code{background:#e2e8f0;padding:1px 5px;border-radius:4px}.warn{background:#fef3c7;border-left:4px solid #f59e0b;padding:8px 12px}</style></head><body>
+<h1>GFM por freguesia — recolha no browser <span class="tag">EXPERIMENTAL — NÃO OPERACIONAL</span></h1>
+<p>Calcula, a partir do <b>Copernicus Global Flood Monitoring</b> (catálogo STAC público), a cheia detetada em cada freguesia para um intervalo de datas, e gera um CSV para a retroanálise <i>Floods AI</i>. Só leitura; não altera nenhum serviço.</p>
+<div class="warn">Os pedidos de estatísticas só são aceites a partir do próprio anfitrião TiTiler, por isso o painel corre nesse separador (não nesta página).</div>
+<ol>
+<li><a class="btn" href="https://titiler.services.eodc.eu/docs" target="_blank" rel="noopener">1. Abrir o separador TiTiler</a></li>
+<li><button id="cp">2. Copiar o script</button> <span id="ok"></span></li>
+<li>No separador TiTiler abra a consola (F12 → Consola), escreva <code>allow pasting</code> se o Chrome pedir, cole o script e prima Enter. Aparece o painel laranja "GFM por freguesia".</li>
+<li>Escolha as datas (ex.: um inverno inteiro: 2025-11-01 a 2026-03-15), o âmbito e <b>Iniciar</b>. Pode <b>Parar</b> e <b>Descarregar CSV</b> a qualquer momento, e <b>retomar</b> carregando o CSV já gravado.</li>
+<li>Guarde o CSV em <code>ai/data/labels/</code> e gere rótulos: <code>python ai/features/gfm_parish_labels.py ficheiro.csv --repo .</code></li>
+</ol>
+<p><b>Leitura dos resultados.</b> "Sem cheia" significa não detetada por satélite (SAR), não "seco confirmado"; a cobertura válida média por freguesia é cerca de 50 %. Termos de licença do GFM a confirmar antes de redistribuir dados.</p>
+<textarea id="src" readonly>/* IGNISPYRO Floods AI — Recolha GFM por freguesia (EXPERIMENTAL — NÃO OPERACIONAL). Só leitura.
+   Correr com o separador em https://titiler.services.eodc.eu/docs (único anfitrião que aceita os pedidos POST).
+   STAC público (stac.eodc.eu) + TiTiler /cog/statistics. Saída: CSV dtmnfr,scene_id,datetime_utc,valid_pixels,flood_fraction,masked_pixels */
+(() =&gt; {
+  if (document.getElementById(&#x27;gfm-collector&#x27;)) return;
+  const PARISHES = &#x27;https://dsantananet.github.io/ignispyro-floods/data/parishes.geojson&#x27;;
+  const STAC = &#x27;https://stac.eodc.eu/api/v1/search&#x27;, STAT = &#x27;https://titiler.services.eodc.eu/cog/statistics&#x27;;
+  const BBOX = [-9.6, 36.9, -6.1, 42.2], HEAD = &#x27;dtmnfr,scene_id,datetime_utc,valid_pixels,flood_fraction,masked_pixels&#x27;;
+  const S = { run: false, rows: [], done: new Set(), parishes: null, tot: 0, doneJobs: 0, t0: 0 };
+  const box = document.createElement(&#x27;div&#x27;); box.id = &#x27;gfm-collector&#x27;;
+  box.style.cssText = &#x27;position:fixed;top:10px;right:10px;z-index:99999;width:360px;background:#0f172a;color:#e2e8f0;font:13px system-ui,sans-serif;border:2px solid #f59e0b;border-radius:10px;padding:12px;box-shadow:0 8px 30px #0008&#x27;;
+  box.innerHTML = `&lt;b&gt;GFM por freguesia&lt;/b&gt; &lt;span style=&quot;background:#f59e0b;color:#000;padding:1px 6px;border-radius:4px;font-size:11px&quot;&gt;EXPERIMENTAL — NÃO OPERACIONAL&lt;/span&gt;
+  &lt;div style=&quot;margin:8px 0;display:grid;grid-template-columns:1fr 1fr;gap:6px&quot;&gt;
+   &lt;label&gt;Início&lt;br&gt;&lt;input id=&quot;gc-t0&quot; type=&quot;date&quot; value=&quot;2026-01-25&quot; style=&quot;width:100%&quot;&gt;&lt;/label&gt;
+   &lt;label&gt;Fim&lt;br&gt;&lt;input id=&quot;gc-t1&quot; type=&quot;date&quot; value=&quot;2026-02-11&quot; style=&quot;width:100%&quot;&gt;&lt;/label&gt;
+   &lt;label&gt;Âmbito&lt;br&gt;&lt;select id=&quot;gc-sc&quot; style=&quot;width:100%&quot;&gt;&lt;option value=&quot;all&quot;&gt;Todas as freguesias&lt;/option&gt;&lt;option value=&quot;s10&quot;&gt;Amostra 10 %&lt;/option&gt;&lt;option value=&quot;s4&quot;&gt;Amostra 4 %&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;
+   &lt;label&gt;Pedidos em paralelo&lt;br&gt;&lt;input id=&quot;gc-w&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;24&quot; value=&quot;12&quot; style=&quot;width:100%&quot;&gt;&lt;/label&gt;&lt;/div&gt;
+  &lt;label style=&quot;display:block;margin-bottom:6px&quot;&gt;Retomar de CSV (opcional)&lt;br&gt;&lt;input id=&quot;gc-f&quot; type=&quot;file&quot; accept=&quot;.csv&quot; style=&quot;width:100%&quot;&gt;&lt;/label&gt;
+  &lt;button id=&quot;gc-go&quot;&gt;Iniciar&lt;/button&gt; &lt;button id=&quot;gc-stop&quot; disabled&gt;Parar&lt;/button&gt; &lt;button id=&quot;gc-dl&quot; disabled&gt;Descarregar CSV&lt;/button&gt;
+  &lt;div id=&quot;gc-st&quot; style=&quot;margin-top:8px;white-space:pre-line;color:#93c5fd&quot;&gt;Pronto.&lt;/div&gt;
+  &lt;div style=&quot;font-size:11px;color:#94a3b8;margin-top:6px&quot;&gt;Sem cheia = não detetada (SAR), não &quot;seco&quot;. Termos de licença GFM a confirmar antes de redistribuir.&lt;/div&gt;`;
+  document.body.appendChild(box);
+  const $ = id =&gt; box.querySelector(&#x27;#&#x27; + id), say = t =&gt; { $(&#x27;gc-st&#x27;).textContent = t; };
+  const ctr = g =&gt; { let a = 1e9, b = -1e9, c = 1e9, d = -1e9; const w = cs =&gt; { if (typeof cs[0] === &#x27;number&#x27;) { a = Math.min(a, cs[0]); b = Math.max(b, cs[0]); c = Math.min(c, cs[1]); d = Math.max(d, cs[1]); } else cs.forEach(w); }; w(g.coordinates); return [(a + b) / 2, (c + d) / 2]; };
+  const pip = (p, ring) =&gt; { let ins = false; for (let i = 0, j = ring.length - 1; i &lt; ring.length; j = i++) { const [xi, yi] = ring[i], [xj, yj] = ring[j]; if ((yi &gt; p[1]) !== (yj &gt; p[1]) &amp;&amp; p[0] &lt; (xj - xi) * (p[1] - yi) / (yj - yi) + xi) ins = !ins; } return ins; };
+  const inside = (p, g) =&gt; (g.type === &#x27;Polygon&#x27; ? [g.coordinates] : g.coordinates).some(poly =&gt; pip(p, poly[0]));
+  async function scenes(t0, t1) {
+    let items = [], tok = null; const body = { collections: [&#x27;GFM&#x27;], bbox: BBOX, datetime: t0 + &#x27;T00:00:00Z/&#x27; + t1 + &#x27;T00:00:00Z&#x27;, limit: 200 };
+    for (let n = 0; n &lt; 200; n++) {
+      const r = await fetch(STAC, { method: &#x27;POST&#x27;, headers: { &#x27;content-type&#x27;: &#x27;application/json&#x27; }, body: JSON.stringify(tok ? { ...body, ...tok } : body) });
+      if (!r.ok) throw new Error(&#x27;STAC &#x27; + r.status); const j = await r.json();
+      items = items.concat(j.features.filter(f =&gt; f.assets.ensemble_flood_extent).map(f =&gt; ({ id: f.id, dt: f.properties.datetime.slice(0, 16), u: f.assets.ensemble_flood_extent.href, g: f.geometry })));
+      say(&#x27;A listar cenas… &#x27; + items.length); const nl = (j.links || []).find(l =&gt; l.rel === &#x27;next&#x27; &amp;&amp; l.body); if (!nl) break; tok = nl.body;
+    }
+    return items;
+  }
+  async function stat(u, g) {
+    try {
+      const r = await fetch(STAT + &#x27;?url=&#x27; + encodeURIComponent(u) + &#x27;&amp;categorical=true&#x27;, { method: &#x27;POST&#x27;, headers: { &#x27;content-type&#x27;: &#x27;application/json&#x27; }, body: JSON.stringify({ type: &#x27;Feature&#x27;, properties: {}, geometry: g }) });
+      if (r.status !== 200) return null; const s = (await r.json()).properties.statistics.b1;
+      return s.valid_pixels &gt; 0 ? [s.valid_pixels, +s.mean.toFixed(5), s.masked_pixels] : null;
+    } catch (e) { return null; }
+  }
+  const csv = () =&gt; HEAD + &#x27;\n&#x27; + S.rows.map(r =&gt; r.join(&#x27;,&#x27;)).join(&#x27;\n&#x27;) + &#x27;\n&#x27;;
+  const progress = () =&gt; { const el = (Date.now() - S.t0) / 1000, rate = S.doneJobs / Math.max(el, 1); say(`${S.doneJobs}/${S.tot} grupos · ${S.rows.length} observações · ${rate.toFixed(1)} grupos/s${S.run ? &#x27;&#x27; : &#x27; · parado&#x27;}`); };
+  $(&#x27;gc-f&#x27;).onchange = async e =&gt; { const f = e.target.files[0]; if (!f) return; const L = (await f.text()).trim().split(&#x27;\n&#x27;).slice(1); S.rows = L.map(l =&gt; l.split(&#x27;,&#x27;).slice(0, 6)).filter(r =&gt; r.length === 6); S.done = new Set(S.rows.map(r =&gt; r[0] + &#x27;|&#x27; + r[1])); say(S.rows.length + &#x27; observações carregadas (serão ignoradas ao retomar).&#x27;); $(&#x27;gc-dl&#x27;).disabled = false; };
+  $(&#x27;gc-stop&#x27;).onclick = () =&gt; { S.run = false; };
+  $(&#x27;gc-dl&#x27;).onclick = () =&gt; { const a = document.createElement(&#x27;a&#x27;); a.href = URL.createObjectURL(new Blob([csv()], { type: &#x27;text/csv&#x27; })); a.download = `gfm_parish_obs_${$(&#x27;gc-t0&#x27;).value}_${$(&#x27;gc-t1&#x27;).value}.csv`; a.click(); };
+  $(&#x27;gc-go&#x27;).onclick = async () =&gt; {
+    if (S.run) return; S.run = true; $(&#x27;gc-go&#x27;).disabled = true; $(&#x27;gc-stop&#x27;).disabled = false;
+    try {
+      if (!S.parishes) { say(&#x27;A obter freguesias…&#x27;); const g = await (await fetch(PARISHES)).json(); S.parishes = g.features.filter(f =&gt; f.geometry).map(f =&gt; ({ k: f.properties.dtmnfr, g: f.geometry, c: ctr(f.geometry) })); }
+      const sc = $(&#x27;gc-sc&#x27;).value; let rnd = 1; const rand = () =&gt; (rnd = (rnd * 1664525 + 1013904223) % 4294967296) / 4294967296;
+      const frac = sc === &#x27;s10&#x27; ? 0.1 : sc === &#x27;s4&#x27; ? 0.04 : 1; const P = S.parishes.filter(() =&gt; frac === 1 || rand() &lt; frac);
+      const SC = await scenes($(&#x27;gc-t0&#x27;).value, $(&#x27;gc-t1&#x27;).value); say(SC.length + &#x27; cenas. A agrupar…&#x27;);
+      const gm = new Map(); for (const s of SC) for (const p of P) if (inside(p.c, s.g)) { const k = s.id + &#x27;|&#x27; + p.k.slice(0, 4); if (!gm.has(k)) gm.set(k, []); gm.get(k).push([s, p]); }
+      const G = [...gm.values()]; S.tot = G.length; S.doneJobs = 0; S.t0 = Date.now(); let gi = 0; $(&#x27;gc-dl&#x27;).disabled = false;
+      const worker = async () =&gt; {
+        while (S.run &amp;&amp; gi &lt; G.length) {
+          const g = G[gi++]; let ok = false;
+          for (let n = 0; n &lt; g.length &amp;&amp; S.run; n++) {
+            const [s, p] = g[n]; if (S.done.has(p.k + &#x27;|&#x27; + s.id)) continue;
+            const r = await stat(s.u, p.g);
+            if (r) { ok = true; S.rows.push([p.k, s.id, s.dt, ...r]); S.done.add(p.k + &#x27;|&#x27; + s.id); } else if (!ok &amp;&amp; n &gt;= 2) break; /* sondagem: município sem dados nesta cena */
+          }
+          S.doneJobs++; if (S.doneJobs % 25 === 0) progress();
+        }
+      };
+      await Promise.all(Array.from({ length: Math.max(1, Math.min(24, +$(&#x27;gc-w&#x27;).value || 12)) }, worker));
+      progress(); say($(&#x27;gc-st&#x27;).textContent + (gi &gt;= G.length ? &#x27;\nConcluído — descarregue o CSV.&#x27; : &#x27;\nParado — pode descarregar ou retomar.&#x27;));
+    } catch (e) { say(&#x27;Erro: &#x27; + e.message); }
+    S.run = false; $(&#x27;gc-go&#x27;).disabled = false; $(&#x27;gc-stop&#x27;).disabled = true; $(&#x27;gc-dl&#x27;).disabled = false;
+  };
+})();
+</textarea>
+<script>document.getElementById('cp').onclick=async()=>{const t=document.getElementById('src');t.select();try{await navigator.clipboard.writeText(t.value);document.getElementById('ok').textContent='Copiado ✓'}catch(e){document.execCommand('copy');document.getElementById('ok').textContent='Copiado ✓ (ou use Ctrl+C na caixa abaixo)'}}</script>
+</body></html>
