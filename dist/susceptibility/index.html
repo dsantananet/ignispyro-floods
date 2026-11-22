@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-PT"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IGNISPYRO Floods Susceptibility — experimental</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,sans-serif;display:grid;grid-template-columns:360px 1fr;height:100vh;color:#1b2430}
+aside{overflow:auto;padding:14px;border-right:1px solid #d5dbe3;background:#f7f9fb}#map{height:100%}main{position:relative}
+h1{font-size:17px;margin:0 0 4px}h2{font-size:14px;margin:14px 0 6px}.banner,#mapmark{background:#b42318;color:#fff;padding:6px 10px;font-weight:700;border-radius:4px;font-size:12px}
+.banner{margin-bottom:10px}#mapmark{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2}
+.card{background:#fff;border:1px solid #d5dbe3;border-radius:6px;padding:8px 10px;margin:6px 0}.row{display:flex;gap:8px;align-items:center;margin:3px 0}
+.sw{width:14px;height:14px;border-radius:3px;border:1px solid #0004}small{color:#566}input[type=text]{width:100%;padding:5px}
+@media(max-width:800px){body{grid-template-columns:1fr;grid-template-rows:55vh 1fr}}
+</style></head><body>
+<aside>
+<div class="banner">EXPERIMENTAL — NÃO OPERACIONAL</div>
+<h1>IGNISPYRO Floods · Susceptibility</h1>
+<small>Mostra o índice de ativação de suscetibilidade (IAS) do Floods, recalculado de 15 em 15 min, e reserva uma camada para o modelo de IA. Não é probabilidade, previsão, aviso nem mancha de inundação.</small>
+<h2>Camada</h2>
+<div class="card"><label class="row"><input type="radio" name="lay" value="ias" checked> IAS do Floods (baseline)</label>
+<label class="row"><input type="radio" name="lay" value="ai" id="aiRadio" disabled> IA (experimental) <small id="aiNote">— sem modelo validado</small></label></div>
+<h2>Estado</h2><div class="card" id="status">A carregar…</div>
+<h2>Legenda</h2><div id="legend"></div>
+<h2>Freguesia</h2><div class="card" id="detail">Clique numa freguesia.</div>
+<h2>Como se calcula o IAS</h2>
+<div class="card"><small>Matriz [suscetibilidade estrutural 1–5 (zonas APA, rios, HAND) × ativação da bacia 1–4 (chuva 1/6/24 h, escoamento SCS-CN, previsão, albufeiras, níveis a subir)]. Pesos de especialista, não ajustados. Dados com mais de 3 h anulam a bacia; índice com mais de 12 h suspende as cores.</small></div>
+<h2>Camada de IA</h2>
+<div class="card"><small>Só será ativada com um modelo validado em eventos independentes e a melhorar o IAS (ver <code>docs/FLOODS_AI_EVALUATION.md</code>). Lê <code>ai-susceptibility.json</code> (<code>{"parishes":{"&lt;dtmnfr&gt;":{"a":0-5}}}</code>) se existir.</small></div>
+<h2>Fonte dos dados</h2>
+<div class="card"><input type="text" id="base" readonly><small>Use <code>?base=URL/</code> para outra origem.</small></div>
+<small>Dados: IGNISPYRO Floods (IPMA, APA/SNIRH, ECMWF, CAOP2025, INE BGRI2021). © OpenStreetMap.</small>
+</aside>
+<main><div id="mapmark">EXPERIMENTAL — NÃO OPERACIONAL</div><div id="map"></div></main>
+<script>
+const $=id=>document.getElementById(id);
+const FLOODS_URL='https://dsantananet.github.io/ignispyro-floods/data/';
+const BASE=new URLSearchParams(location.search).get('base')||(location.pathname.includes('/susceptibility/')?'../data/':FLOODS_URL);
+$('base').value=BASE;
+const NAMES=['Sem dados','Baixa','Moderada','Elevada','Muito elevada','Crítica'],COLORS=['#9aa9ad','#4fae7b','#e3c941','#ee9b3d','#d9503f','#8e2f78'];
+$('legend').innerHTML=NAMES.map((n,i)=>`<div class="row"><span class="sw" style="background:${COLORS[i]}"></span>${n}</div>`).join('');
+async function getJSON(f,opt){const r=await fetch(BASE+f+'?v='+Math.floor(Date.now()/60000));if(!r.ok){if(opt)return null;throw new Error(f+' '+r.status);}return r.json();}
+async function getGeo(){try{const r=await fetch(BASE+'parishes.geojson.gz');if(r.ok&&self.DecompressionStream)return JSON.parse(await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text());}catch(e){}return getJSON('parishes.geojson');}
+const map=new maplibregl.Map({container:'map',style:{version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap'}},layers:[{id:'osm',type:'raster',source:'osm'}]},center:[-8.2,39.6],zoom:6});
+map.addControl(new maplibregl.NavigationControl());
+let geo,watch,ai,suspended=false,mode='ias';
+const cls=(p,m)=>{if(suspended)return 0;const src=m==='ai'?ai?.parishes?.[p.dtmnfr]:watch.parishes[p.dtmnfr];return src&&Number.isInteger(src.a)?src.a:0;};
+function paint(){geo.features.forEach(f=>{f.properties._c=COLORS[cls(f.properties,mode)];});map.getSource('p')?.setData(geo);}
+document.querySelectorAll('input[name=lay]').forEach(r=>r.onchange=e=>{mode=e.target.value;paint();});
+(async()=>{try{
+ [watch,geo,ai]=await Promise.all([getJSON('floodwatch.json'),getGeo(),getJSON('ai-susceptibility.json',true)]);
+ if(watch.schema_version!=='floods-watch/1')throw new Error('esquema floodwatch inesperado');
+ const age=(Date.now()-Date.parse(watch.computed_at))/36e5;suspended=age>12;
+ if(ai?.parishes){$('aiRadio').disabled=false;$('aiNote').textContent='— modelo carregado';}
+ const counts=Object.entries(watch.summary.parishes_by_class).filter(([,v])=>v).map(([k,v])=>`${k}: ${v}`).join(' · ');
+ $('status').innerHTML=`IAS calculado em <b>${watch.computed_at}</b> (há ${age.toFixed(1)} h).<br>${counts}`+(suspended?'<br><b style="color:#b42318">Índice com mais de 12 h: cores suspensas.</b>':age>watch.valid_for_hours?'<br><b style="color:#b54708">Mais de '+watch.valid_for_hours+' h: dados possivelmente desatualizados.</b>':'');
+ const add=()=>{geo.features.forEach(f=>{f.properties._c=COLORS[cls(f.properties,mode)];});
+  map.addSource('p',{type:'geojson',data:geo});
+  map.addLayer({id:'p-fill',type:'fill',source:'p',paint:{'fill-color':['get','_c'],'fill-opacity':.65}});
+  map.addLayer({id:'p-line',type:'line',source:'p',paint:{'line-color':'#444','line-width':.3}});
+  map.on('click','p-fill',e=>{const p=e.features[0].properties,w=watch.parishes[p.dtmnfr]||{},a=cls(p,mode);
+   $('detail').innerHTML=`<b>${p.freguesia}</b> (${p.municipio})<br>${mode==='ai'?'IA':'IAS'}: <b>${NAMES[a]}</b><br><small>Estrutural ${w.s??'—'}/5 · ativação ${w.t??'—'}/4${w.bump?' (+1 albufeira/nível)':''}${w.pz!=null?'<br>Residentes em zona T100 (estimativa por área): '+Math.round(w.pz):''}</small>`;});};
+ map.loaded()?add():map.on('load',add);
+}catch(e){$('status').innerHTML='<b style="color:#b42318">Falha ao carregar:</b> '+e.message+'<br><small>Sem dados não se mostra suscetibilidade.</small>';}})();
+</script></body></html>
