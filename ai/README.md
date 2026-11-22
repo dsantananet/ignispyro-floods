@@ -35,3 +35,6 @@ Tabela para ArcGIS Online (juntar à CAOP por `dtmnfr`): `node ai/susceptibility
 RF, XGBoost, logística, IAS e prevalência com validação repetida **por grupo** (evento ou bacia), bootstrap agrupado e hashes/versões. Tem um portão
 (≥10 eventos positivos, ≥4 bacias, ≥200 negativos observados) e **recusa treinar** abaixo disso. Testado só em dados sintéticos (sem fuga de grupos).
 Não há resultados reais: faltam rótulos (ver `docs/FLOODS_AI_EVALUATION.md`).
+
+## Carregar um ZIP Copernicus e ver no mapa
+`ai/tool/zip-flood-map.html` (abrir no browser): largar um ou mais pacotes `EMSRxxx_AOIyy_DEL_*.zip`; mostra a cheia observada, a AOI, as freguesias coloridas por % inundada ou pelo IAS estrutural do Floods e o AUC dos preditores estáticos. Tudo corre no browser (o ZIP não é enviado). EXPERIMENTAL — NÃO OPERACIONAL.

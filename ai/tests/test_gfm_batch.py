@@ -41,3 +41,12 @@ class CollectorPage(unittest.TestCase):
         self.assertIn("EXPERIMENTAL — NÃO OPERACIONAL", js)
         for forbidden in ("method: 'PUT'", "method: 'DELETE'", "localStorage", "XMLHttpRequest"):
             self.assertNotIn(forbidden, js)
+
+
+class ZipMapPage(unittest.TestCase):
+    def test_zip_map_is_labelled_and_local(self):
+        s = (Path(__file__).resolve().parents[1] / "tool" / "zip-flood-map.html").read_text(encoding="utf-8")
+        self.assertIn("EXPERIMENTAL — NÃO OPERACIONAL", s)
+        self.assertIn("maplibregl.Map", s)  # não maplibre.Map
+        for forbidden in ("method:'POST'", "method: 'POST'", "XMLHttpRequest", "sendBeacon", "localStorage"):
+            self.assertNotIn(forbidden, s)  # o ZIP carregado nunca sai do browser
