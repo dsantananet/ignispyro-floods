@@ -88,3 +88,16 @@ Fontes: Copernicus EMS (mapping.emergency.copernicus.eu: EMSR861, EMSR864, EMSR4
 - Onde não há zona APA (Tomar, Mértola) a componente falha (poucos positivos: 1–2).
 - Não foi possível retroanalisar a ativação em tempo real (componente dinâmica): o `floodwatch.json` dessas datas não está guardado e a chuva observada de jan.–fev. 2026 não está acessível a partir deste ambiente.
 - Portão de treino (≥10 eventos, ≥4 bacias, ≥200 negativos observados): bacias já ≥4, mas **eventos = 2 e negativos observados = 0**. Não se treinou RF/XGBoost.
+
+## 8. Fonte independente: Copernicus Global Flood Monitoring (22-11-2026)
+
+**Acesso.** O catálogo STAC do GFM (`stac.eodc.eu`, coleção GFM) e os COG são abertos (sem login). As estatísticas por freguesia foram calculadas via TiTiler a partir do browser (o ambiente de execução não alcança `data.eodc.eu`). Dados em `ai/data/labels/gfm_parish_obs_20260125_20260210.csv`; rótulos por `ai/features/gfm_parish_labels.py`.
+
+**Âmbito (amostra, não o país inteiro).** 286 cenas (25 jan–10 fev 2026); 25 cenas com dados válidos sobre 350 freguesias (as dos municípios das AOI EMSR mais ~4 % aleatórias), 1–2 dias de observação por freguesia (2, 7, 8 e 9 fev.; 28 jan.). Regra de y=1 igual à EMSR (≥5 ha e ≥0,5 %). "Observada sem cheia" = cobertura válida ≥80 % da freguesia e <0,5 ha detetados — **não detetado, não seco confirmado**; a máscara de exclusão do GFM não foi aplicada.
+
+**Resultado.** 54 freguesias positivas, 229 observadas sem cheia. AUC do IAS estrutural contra o GFM: 0,84 (freguesias com cobertura ≥50 %, n=323); 0,72 nas freguesias **fora** das AOI do Copernicus EMS (n=161, 9 positivas, 125 sem cheia). A fração em zona APA T100 sozinha: 0,86 e 0,76; HAND < 5 m: 0,67 e 0,64; proximidade de rio: 0,63 e 0,62.
+
+**Leitura.**
+- Resultado compatível com a retroanálise EMSR (secção 7) e ligeiramente pior fora das AOI escolhidas pelo Copernicus, como esperado com menos viés de seleção; com 9 positivas o intervalo é largo.
+- Pela primeira vez há um número relevante de freguesias "observadas sem cheia" (229, acima do mínimo de 200 do portão), mas só com a ressalva acima.
+- **O portão continua por cumprir** nos eventos: todos os dados são da mesma época de tempestades (jan.–fev. 2026), 2–3 episódios, não 10 eventos independentes. Não se treinou RF/XGBoost. Para o fazer é preciso estender o GFM a outros invernos (a coleção começa em 2015) e à restante área do país, o que exige processamento em lote fora do browser (o sandbox não alcança `data.eodc.eu`).
