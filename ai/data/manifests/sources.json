@@ -133,8 +133,12 @@
    "access": "STAC público https://stac.eodc.eu/api/v1 (coleção GFM); COG em data.eodc.eu; estatísticas por freguesia via TiTiler (titiler.services.eodc.eu/cog/statistics)",
    "status": "consultado: 286 cenas sobre Portugal continental, 25 jan–10 fev 2026; 25 cenas com cobertura de 350 freguesias (amostra: freguesias dos municípios das AOI EMSR + ~4 % aleatórias)",
    "license": null,
-   "attribution": "© União Europeia, Copernicus EMS (GFM) — licença/termos a confirmar",
-   "limitations": "sem cheia = não detetada (SAR), não seco confirmado; exclusão (zonas urbanas/vegetação) não aplicada; 1–2 dias de passagem por freguesia; uma só época de tempestades"
+   "limitations": "sem cheia = não detetada (SAR), não seco confirmado; exclusão (zonas urbanas/vegetação) não aplicada; 1–2 dias de passagem por freguesia; uma só época de tempestades",
+   "nature": "observado",
+   "role": "rótulos independentes por freguesia (cheia detetada / observada sem cheia) para retroanálise; candidato a validação",
+   "resolution": "20 m (Sentinel-1, EQUI7)",
+   "coverage": "Portugal continental, 25 jan–10 fev 2026 (amostra de 350 freguesias)",
+   "attribution": "© União Europeia, Copernicus EMS (GFM) — termos de licença a confirmar"
   }
  ]
 }
