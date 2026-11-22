@@ -64,3 +64,27 @@ Pesquisa nas páginas do Copernicus EMS e da APA (detalhes por AOI não obtidos:
 Leitura: há provavelmente 3 eventos Copernicus com mancha observada em Portugal continental (2019, jan. 2026, fev. 2026) e ainda 0 negativos fiáveis. As 17 AOIs de EMSR864 acrescentam áreas, não eventos independentes. É muito pouco para validação por evento/bacia; a conclusão da secção 1 mantém-se. Pode haver ativações anteriores a triar (a maioria das ativações RM em Portugal desde 2014 são incêndios).
 
 Fontes: Copernicus EMS (mapping.emergency.copernicus.eu: EMSR861, EMSR864, EMSR417); ESA/UE "Storm Leonardo caused floods in central Portugal"; APA PGRI 2016-2021 (RH4A).
+
+## 7. Dados obtidos e retroanálise descritiva do IAS estrutural (22-11-2026)
+
+**Dados.** 15 pacotes de delineação Copernicus EMS descarregados (API pública; © União Europeia, Copernicus EMS): EMSR864 (tempestade Leonardo, fev. 2026) áreas Ermidas Sado, Leiria, Coimbra, Tomar e Mértola, e EMSR861 (tempestade Kristin, jan. 2026) área Coimbra. Faltam 20 AOI portuguesas de EMSR864 e as restantes de EMSR861. Rótulos por freguesia em `ai/data/labels/parish_labels_emsr.csv` (script `ai/features/emsr_parish_labels.py`, manifesto com SHA-256 dos pacotes).
+
+**Regra de rótulo (fixada antes de ver as métricas).** Freguesia com ≥50 % da área dentro da AOI; y=1 se cheia observada ≥5 ha e ≥0,5 % da freguesia. y=0 significa "sem cheia detetada", não "seco confirmado" (limitações SAR): continua a não haver negativos observados.
+
+**Resultado (362 freguesias, 84 positivas, prevalência 0,23; `ai/validation/static_backtest.py`):**
+
+| Variável | ROC-AUC | PR-AUC | IC 95 % (bootstrap por AOI) |
+|---|---|---|---|
+| IAS estrutural (score) | 0,909 | 0,72 | 0,68–0,92 |
+| IAS estrutural (classe 1–5) | 0,901 | 0,72 | 0,72–0,92 |
+| Fração em zona APA T100 | 0,912 | 0,78 | 0,69–0,93 |
+| Fração em zona APA T1000 | 0,902 | 0,77 | 0,69–0,92 |
+| HAND < 5 m | 0,791 | 0,63 | 0,60–0,85 |
+| Proximidade de rio (300 m) | 0,688 | 0,37 | 0,52–0,73 |
+
+**Leitura.**
+- A componente estrutural discrimina bem no Mondego (AUC ≈ 0,9 em EMSR861-Coimbra; 0,73–0,84 em EMSR864-Coimbra), mas isto é um diagnóstico descritivo, não validação independente: dois eventos meteorológicos, Mondego domina e os dois eventos sobrepõem-se geograficamente.
+- A fração em zona APA T100 sozinha iguala ou supera o score composto (AUC 0,912 vs 0,909; PR-AUC 0,78 vs 0,72): a combinação com HAND e rio não acrescenta valor nestes dados. A proximidade de rio é a variável mais fraca.
+- Onde não há zona APA (Tomar, Mértola) a componente falha (AUC 0,0–0,4, com 1–2 freguesias positivas): o IAS estrutural depende da cobertura APA.
+- Não foi possível retroanalisar a ativação em tempo real (componente dinâmica): o `floodwatch.json` dessas datas não está no repositório (os artefactos do CI têm retenção de 30 dias) e a chuva observada de jan.–fev. 2026 não está acessível a partir deste ambiente.
+- Portão de treino (≥10 eventos positivos, ≥4 bacias, ≥200 negativos observados): **continua por cumprir** (3 eventos; negativos observados 0). Não se treinou RF/XGBoost.

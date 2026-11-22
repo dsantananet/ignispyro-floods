@@ -1,0 +1,104 @@
+{
+ "n": 362,
+ "positives": 84,
+ "prevalence": 0.23204419889502761,
+ "por_variavel": {
+  "ias_static_score": {
+   "auc_pooled": 0.9085089071599862,
+   "ap_pooled": 0.7201755359294645,
+   "auc_ci95_bootstrap_por_AOI": [
+    0.6845238095238095,
+    0.9180975255544422
+   ],
+   "auc_por_AOI": {
+    "EMSR861-5": 0.91,
+    "EMSR864-1": 1.0,
+    "EMSR864-4": 0.93,
+    "EMSR864-5": 0.73,
+    "EMSR864-14": 0.35,
+    "EMSR864-15": 0.0
+   }
+  },
+  "ias_static_class": {
+   "auc_pooled": 0.9012504282288454,
+   "ap_pooled": 0.7239404462466131,
+   "auc_ci95_bootstrap_por_AOI": [
+    0.7181546945701357,
+    0.9154397035256411
+   ],
+   "auc_por_AOI": {
+    "EMSR861-5": 0.9,
+    "EMSR864-1": 0.83,
+    "EMSR864-4": 0.97,
+    "EMSR864-5": 0.81,
+    "EMSR864-14": 0.38,
+    "EMSR864-15": 0.25
+   }
+  },
+  "f100": {
+   "auc_pooled": 0.9118276807125728,
+   "ap_pooled": 0.783525138413003,
+   "auc_ci95_bootstrap_por_AOI": [
+    0.6854203296703296,
+    0.928445877352772
+   ],
+   "auc_por_AOI": {
+    "EMSR861-5": 0.92,
+    "EMSR864-1": 0.83,
+    "EMSR864-4": 0.93,
+    "EMSR864-5": 0.84,
+    "EMSR864-14": 0.35,
+    "EMSR864-15": 0.0
+   }
+  },
+  "f1000": {
+   "auc_pooled": 0.9023210003425831,
+   "ap_pooled": 0.77399129990377,
+   "auc_ci95_bootstrap_por_AOI": [
+    0.687206043956044,
+    0.9189869315256335
+   ],
+   "auc_por_AOI": {
+    "EMSR861-5": 0.9,
+    "EMSR864-1": 0.83,
+    "EMSR864-4": 0.93,
+    "EMSR864-5": 0.84,
+    "EMSR864-14": 0.35,
+    "EMSR864-15": 0.0
+   }
+  },
+  "river300": {
+   "auc_pooled": 0.6882708119218911,
+   "ap_pooled": 0.3701302755757965,
+   "auc_ci95_bootstrap_por_AOI": [
+    0.5190033783783784,
+    0.7270805191646302
+   ],
+   "auc_por_AOI": {
+    "EMSR861-5": 0.67,
+    "EMSR864-1": 0.83,
+    "EMSR864-4": 0.5,
+    "EMSR864-5": 0.58,
+    "EMSR864-14": 0.45,
+    "EMSR864-15": 0.0
+   }
+  },
+  "hand_lt5": {
+   "auc_pooled": 0.7906175059952038,
+   "ap_pooled": 0.6298687058096628,
+   "auc_ci95_bootstrap_por_AOI": [
+    0.5991902834008097,
+    0.8483622306285348
+   ],
+   "auc_por_AOI": {
+    "EMSR861-5": 0.77,
+    "EMSR864-1": 1.0,
+    "EMSR864-4": 0.5,
+    "EMSR864-5": 0.74,
+    "EMSR864-14": 0.47,
+    "EMSR864-15": 0.0
+   }
+  }
+ },
+ "aviso": "Descritivo; IC por bootstrap de AOI com apenas 6 AOI e 2 eventos meteorol\u00f3gicos \u2014 muito largo. EXPERIMENTAL \u2014 N\u00c3O OPERACIONAL."
+}

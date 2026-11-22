@@ -1,0 +1,83 @@
+{
+ "source": "Copernicus EMS Rapid Mapping (EMSR861, EMSR864), delineação observedEventA",
+ "attribution": "© European Union, Copernicus EMS",
+ "rule": "y=1 se cheia ≥5 ha e ≥0,5% da freguesia; freguesia com ≥50% dentro da AOI",
+ "warning": "y=0 = sem cheia detetada, não seco confirmado",
+ "packages": [
+  {
+   "product": "EMSR861_AOI05_DEL_PRODUCT",
+   "sha256": "efd968fa7094e225b892e075c7b80afc7d7496d7a61746cf859d5803b66d7456",
+   "bytes": 13835792
+  },
+  {
+   "product": "EMSR864_AOI01_DEL_PRODUCT",
+   "sha256": "41c040d1be32824fbcb3704ae8a42c1761e0810c3f8f7f0641a97f9cd8f301aa",
+   "bytes": 6863066
+  },
+  {
+   "product": "EMSR864_AOI05_DEL_MONIT02",
+   "sha256": "7ebfbbc75f5282fbc6fb1c0987a6b380bd10dc15865b8760ec147b6638404586",
+   "bytes": 10979815
+  },
+  {
+   "product": "EMSR864_AOI05_DEL_PRODUCT",
+   "sha256": "78a7646b370ea7c669e2e57adf1ec72b3a675e1b79e3af16f89593ffdd84e59b",
+   "bytes": 10725313
+  },
+  {
+   "product": "EMSR864_AOI01_DEL_MONIT02",
+   "sha256": "759a2afaec46d90f2ce2c0f532bda098c5dfda95aaa77801c8769ddb8a1f084e",
+   "bytes": 5161830
+  },
+  {
+   "product": "EMSR864_AOI05_DEL_MONIT04",
+   "sha256": "af091a0b03014f288fe9e90d70333fda1fc343c922e87ab4d3abcecb22d7492b",
+   "bytes": 13783630
+  },
+  {
+   "product": "EMSR864_AOI04_DEL_PRODUCT",
+   "sha256": "beb380cacb3c1c2ef84510497b8cde74cccdb07d86e694d79da43176b1fac9cd",
+   "bytes": 10913023
+  },
+  {
+   "product": "EMSR864_AOI15_DEL_MONIT01",
+   "sha256": "babf30113729a6b2d7cefdbad05460a9322bc382f7c3cabb43b9b0492cccc50d",
+   "bytes": 11080742
+  },
+  {
+   "product": "EMSR864_AOI04_DEL_MONIT01",
+   "sha256": "d19a7d497491a6f6e7f8ec21533eb564aa8eb870937927866b737ab4394cc516",
+   "bytes": 10289177
+  },
+  {
+   "product": "EMSR864_AOI01_DEL_MONIT01",
+   "sha256": "8da6cd8add3851975f13d21198edcdf8b6af569deaeb8e3569e476997f71374d",
+   "bytes": 5218243
+  },
+  {
+   "product": "EMSR864_AOI05_DEL_MONIT01",
+   "sha256": "aa90925141bfb8828a9cf20a083c18b454eb24dae3108d6c397671c9502b90ff",
+   "bytes": 10755347
+  },
+  {
+   "product": "EMSR864_AOI04_DEL_MONIT02",
+   "sha256": "787b0143fda1740693746911c69647149fa6f172ebe379afb101be5411beb43c",
+   "bytes": 12114071
+  },
+  {
+   "product": "EMSR864_AOI15_DEL_PRODUCT",
+   "sha256": "ee323eb12920dc0e9365e5ff2cdf516536dd6cd4f31e19ef6dc38d900fe116cf",
+   "bytes": 13679484
+  },
+  {
+   "product": "EMSR864_AOI05_DEL_MONIT03",
+   "sha256": "13d1b31c3210cc59c1eacb87cc6e8cfe107aff7d127be620f01242f820ad2b7b",
+   "bytes": 13337998
+  },
+  {
+   "product": "EMSR864_AOI14_DEL_MONIT01",
+   "sha256": "2c96ac7a9557cff14aabbbd86ed81a7a985ae86bf07a2d8120a1a643e456ead4",
+   "bytes": 16668713
+  }
+ ]
+}
