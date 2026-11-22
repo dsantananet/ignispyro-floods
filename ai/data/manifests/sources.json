@@ -1,16 +1,131 @@
 {
-  "schema": "floods-ai-sources/1",
-  "updated": "2026-11-22",
-  "note": "Inventário preliminar da auditoria inicial. Licenças por confirmar antes de descarregar/armazenar/publicar.",
-  "sources": [
-    {"id": "emsr417-aoi01-v1", "name": "Copernicus EMS EMSR417 AOI01 delineação v1", "nature": "observado", "role": "rótulo positivo (parcial)", "coverage": "Mondego/Baixo Mondego, 23/12/2019 06:43 UTC", "resolution": "10 m nominal (Sentinel-1A)", "license": null, "status": "já usado no diagnóstico de 2019; não reutilizável para aceitação", "limitations": "SAR: ausência de deteção não prova seco; urbano/floresta; RMSE até 12,5 m"},
-    {"id": "apa-areas-inundaveis", "name": "APA cartografia de áreas inundáveis", "nature": "derivado", "role": "a avaliar (rótulo/baseline)", "coverage": null, "resolution": null, "license": null, "status": "por inventariar", "limitations": "identificar finalidade e período de retorno"},
-    {"id": "copernicus-ems-pt-outros", "name": "Outras ativações Copernicus EMS em Portugal", "nature": "observado", "role": "rótulos adicionais", "coverage": null, "resolution": null, "license": null, "status": "por inventariar", "limitations": null},
-    {"id": "snirh-telemetria", "name": "APA/SNIRH níveis, caudais, albufeiras", "nature": "observado", "role": "features", "coverage": "155 estações no catálogo", "resolution": null, "license": null, "status": "no repositório (dist/data/snirh-telemetry.json)", "limitations": "datum e lacunas"},
-    {"id": "ipma-precipitacao", "name": "IPMA precipitação observada", "nature": "observado", "role": "features", "coverage": null, "resolution": null, "license": null, "status": "por confirmar", "limitations": null},
-    {"id": "era5-glofas-history", "name": "Reanálise/histórico de modelo (dist/data/history.json)", "nature": "modelo", "role": "features (rotuladas como modelo)", "coverage": "28 nós de referência, 3653 datas", "resolution": "0,25°", "license": null, "status": "no repositório", "limitations": "não é observação de inundação"},
-    {"id": "copernicus-dem-glo30", "name": "Copernicus DEM GLO-30", "nature": "derivado", "role": "features de terreno", "coverage": null, "resolution": "30 m", "license": null, "status": "parcial em engine/terrain", "limitations": "datum EGM2008; artefactos do MDT"},
-    {"id": "ias-susceptibilidade", "name": "IAS / susceptibility.json", "nature": "derivado", "role": "baseline", "coverage": "3049 freguesias", "resolution": "freguesia", "license": null, "status": "no repositório", "limitations": "índice de rastreio, não verdade de referência"},
-    {"id": "dgt-caop-cos-ine-bgri", "name": "DGT CAOP/COS e INE BGRI", "nature": "observado", "role": "contexto/exposição", "coverage": null, "resolution": null, "license": null, "status": "parcial no repositório", "limitations": "épocas diferentes (CAOP2025/Censos2021)"}
-  ]
+ "schema": "floods-ai-sources/1",
+ "updated": "2026-11-22",
+ "note": "Inventário preliminar da auditoria inicial. Licenças por confirmar antes de descarregar/armazenar/publicar.",
+ "sources": [
+  {
+   "id": "emsr417-aoi01-v1",
+   "name": "Copernicus EMS EMSR417 AOI01 delineação v1",
+   "nature": "observado",
+   "role": "rótulo positivo (parcial)",
+   "coverage": "Mondego/Baixo Mondego, 23/12/2019 06:43 UTC",
+   "resolution": "10 m nominal (Sentinel-1A)",
+   "license": null,
+   "status": "já usado no diagnóstico de 2019; não reutilizável para aceitação",
+   "limitations": "SAR: ausência de deteção não prova seco; urbano/floresta; RMSE até 12,5 m"
+  },
+  {
+   "id": "emsr861",
+   "name": "Copernicus EMS EMSR861 — Tempestade Kristin, inundações no centro de Portugal",
+   "nature": "observado",
+   "role": "candidato a rótulo positivo (Coimbra, Leiria, Médio Tejo, Beira Baixa)",
+   "coverage": "evento desde 26/01/2026",
+   "resolution": null,
+   "license": null,
+   "status": "candidato; produtos, AOIs e sensores por confirmar (página de notícias não os lista)",
+   "limitations": "validar tempo de aquisição vs pico; ausência de deteção ≠ seco",
+   "source_url": "https://mapping.emergency.copernicus.eu/news/storm-kristin-and-flooding-in-central-portugal-and-andalusia-spain-emsr861/"
+  },
+  {
+   "id": "emsr864",
+   "name": "Copernicus EMS EMSR864 — Tempestade Leonardo, inundações em Portugal",
+   "nature": "observado",
+   "role": "candidato a rótulo positivo (17 AOIs referidas pela ESA/UE)",
+   "coverage": "evento desde 03/02/2026",
+   "resolution": null,
+   "license": null,
+   "status": "candidato; AOIs, produtos e datas por confirmar",
+   "limitations": "17 AOIs do mesmo evento não são 17 eventos independentes",
+   "source_url": "https://eu-space.europa.eu/components/earth-observation-copernicus/image-of-day/storm-leonardo-caused-floods-central-portugal"
+  },
+  {
+   "id": "emsr-pt-anteriores",
+   "name": "Outras ativações Rapid Mapping em Portugal desde 2014 (maioria incêndios)",
+   "nature": "observado",
+   "role": "por triar (filtrar apenas inundações)",
+   "coverage": null,
+   "resolution": null,
+   "license": null,
+   "status": "por inventariar na lista oficial de ativações",
+   "limitations": null
+  },
+  {
+   "id": "apa-areas-inundaveis",
+   "name": "APA PGRI 2016-2021: cartas de zonas inundáveis e de risco (63 ARPSI)",
+   "nature": "derivado",
+   "role": "baseline/contexto (não rótulo)",
+   "coverage": "ARPSI continental, ex.: RH4 inclui Coimbra e Estuário do Mondego",
+   "resolution": null,
+   "license": null,
+   "status": "existe; confirmar formato/licença nos SNIAMB/SNIG",
+   "limitations": "cartografia modelada por período de retorno, não evento observado; não usar como rótulo de evento",
+   "source_url": "https://apambiente.pt/sites/default/files/_SNIAMB_Agua/DRH/PlaneamentoOrdenamento/PGRI/2016-2021/PGRI_1_RH4A.pdf"
+  },
+  {
+   "id": "snirh-telemetria",
+   "name": "APA/SNIRH níveis, caudais, albufeiras",
+   "nature": "observado",
+   "role": "features",
+   "coverage": "155 estações no catálogo",
+   "resolution": null,
+   "license": null,
+   "status": "no repositório (dist/data/snirh-telemetry.json)",
+   "limitations": "datum e lacunas"
+  },
+  {
+   "id": "ipma-precipitacao",
+   "name": "IPMA precipitação observada",
+   "nature": "observado",
+   "role": "features",
+   "coverage": null,
+   "resolution": null,
+   "license": null,
+   "status": "por confirmar",
+   "limitations": null
+  },
+  {
+   "id": "era5-glofas-history",
+   "name": "Reanálise/histórico de modelo (dist/data/history.json)",
+   "nature": "modelo",
+   "role": "features (rotuladas como modelo)",
+   "coverage": "28 nós de referência, 3653 datas",
+   "resolution": "0,25°",
+   "license": null,
+   "status": "no repositório",
+   "limitations": "não é observação de inundação"
+  },
+  {
+   "id": "copernicus-dem-glo30",
+   "name": "Copernicus DEM GLO-30",
+   "nature": "derivado",
+   "role": "features de terreno",
+   "coverage": null,
+   "resolution": "30 m",
+   "license": null,
+   "status": "parcial em engine/terrain",
+   "limitations": "datum EGM2008; artefactos do MDT"
+  },
+  {
+   "id": "ias-susceptibilidade",
+   "name": "IAS / susceptibility.json",
+   "nature": "derivado",
+   "role": "baseline",
+   "coverage": "3049 freguesias",
+   "resolution": "freguesia",
+   "license": null,
+   "status": "no repositório",
+   "limitations": "índice de rastreio, não verdade de referência"
+  },
+  {
+   "id": "dgt-caop-cos-ine-bgri",
+   "name": "DGT CAOP/COS e INE BGRI",
+   "nature": "observado",
+   "role": "contexto/exposição",
+   "coverage": null,
+   "resolution": null,
+   "license": null,
+   "status": "parcial no repositório",
+   "limitations": "épocas diferentes (CAOP2025/Censos2021)"
+  }
+ ]
 }

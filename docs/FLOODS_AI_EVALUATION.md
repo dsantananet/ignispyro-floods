@@ -49,3 +49,18 @@ Com 1 evento positivo e 0 negativos fiáveis, qualquer métrica de RF/XGBoost se
 4. Só se o passo 3 for positivo: construir features e baselines; RF/XGBoost em último lugar.
 
 **Resposta provisória à pergunta do plano (secção 17):** não demonstrável com os dados atuais; o Floods permanece inalterado.
+
+## 6. Atualização — inventário de eventos (22-11-2026)
+
+Pesquisa nas páginas do Copernicus EMS e da APA (detalhes por AOI não obtidos: as páginas de ativação são dinâmicas e as notícias não listam produtos).
+
+| Evento | Ativação | O que se sabe | Estado |
+|---|---|---|---|
+| Dez. 2019, Mondego | EMSR417 | Em uso; já consumido no diagnóstico | Não reutilizável para aceitação |
+| Tempestade Kristin, jan. 2026 | EMSR861 | Pedido de mapeamento de extensão de cheia e danos; afeta Coimbra, Leiria, Médio Tejo, Beira Baixa; evento desde 26/01/2026 | Candidato; produtos e AOIs por confirmar |
+| Tempestade Leonardo, fev. 2026 | EMSR864 | Segundo a ESA/UE, 17 AOIs em Portugal; evento desde 03/02/2026 | Candidato; produtos e datas por confirmar |
+| PGRI 2016-2021 (APA) | — | 63 ARPSI com cartas de zonas inundáveis e de risco | Baseline/contexto; modelado por período de retorno, não é rótulo de evento |
+
+Leitura: há provavelmente 3 eventos Copernicus com mancha observada em Portugal continental (2019, jan. 2026, fev. 2026) e ainda 0 negativos fiáveis. As 17 AOIs de EMSR864 acrescentam áreas, não eventos independentes. É muito pouco para validação por evento/bacia; a conclusão da secção 1 mantém-se. Pode haver ativações anteriores a triar (a maioria das ativações RM em Portugal desde 2014 são incêndios).
+
+Fontes: Copernicus EMS (mapping.emergency.copernicus.eu: EMSR861, EMSR864, EMSR417); ESA/UE "Storm Leonardo caused floods in central Portugal"; APA PGRI 2016-2021 (RH4A).
