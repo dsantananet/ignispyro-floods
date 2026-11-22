@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-PT"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Floods AI — painel experimental (independente)</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,sans-serif;display:grid;grid-template-columns:380px 1fr;height:100vh;color:#1b2430}
+aside{overflow:auto;padding:14px;border-right:1px solid #d5dbe3;background:#f7f9fb}
+#map{height:100%}h1{font-size:17px;margin:0 0 4px}h2{font-size:14px;margin:16px 0 6px}
+.banner{background:#b42318;color:#fff;padding:6px 10px;font-weight:700;border-radius:4px;margin-bottom:10px;font-size:12px}
+.card{background:#fff;border:1px solid #d5dbe3;border-radius:6px;padding:8px 10px;margin:6px 0}
+.row{display:flex;gap:8px;align-items:center;margin:4px 0}.sw{width:14px;height:14px;border-radius:3px;border:1px solid #0004}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border-bottom:1px solid #e3e7ed;padding:3px 4px;text-align:left;vertical-align:top}
+.ok{color:#067647}.no{color:#b42318}.na{color:#b54708}small{color:#566}
+#mapmark{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#b42318;color:#fff;padding:4px 12px;font-weight:700;border-radius:4px;z-index:2;font-size:12px}
+main{position:relative}@media(max-width:800px){body{grid-template-columns:1fr;grid-template-rows:55vh 1fr}}
+</style></head><body>
+<aside>
+<div class="banner">EXPERIMENTAL — NÃO OPERACIONAL</div>
+<h1>Floods AI · painel de adequação</h1>
+<small>Ferramenta independente do IGNISPYRO Floods. Serve para decidir se vale a pena associar um modelo de IA ao Floods. Não emite avisos.</small>
+
+<h2>Camadas</h2>
+<div id="layers"></div>
+
+<h2>Veredicto atual</h2>
+<div class="card"><b class="no">Modelação interrompida.</b> Dados atuais: 1 evento positivo independente (EMSR417, 2019) e 0 negativos fiáveis. Sem modelo, sem métricas, sem probabilidades.</div>
+
+<h2>Portão de decisão</h2>
+<table id="gates"></table>
+
+<h2>Resultados do modelo</h2>
+<div class="card" id="modelinfo"></div>
+
+<h2>Confronto 2019 (piloto vs. SAR)</h2>
+<div class="card">Observado no domínio comparável: 10,80 ha · Simulado (dia da imagem): 2,16 ha · <b class="no">Interseção: 0 ha</b> (tolerância 60 m também 0). O SAR não prova terreno seco; a imagem já foi usada em diagnóstico.</div>
+
+<h2>Camada para ArcGIS Online</h2>
+<div class="card">Ficheiro <code>ai/tool/layers/floods-ai-evidence.geojson</code>: em ArcGIS Online → Mapa → Adicionar → Adicionar camada a partir de ficheiro. Campos: camada, natureza, fonte, estado, nota. Manter a marca experimental no título e na descrição do item e não partilhar publicamente.</div>
+<small>Fontes: © União Europeia, Copernicus EMS EMSR417 AOI01 v1; piloto hidráulico IGNISPYRO; © OpenStreetMap.</small>
+</aside>
+<main><div id="mapmark">EXPERIMENTAL — NÃO OPERACIONAL</div><div id="map"></div></main>
+<script>
+const DATA=/*DATA*/null, MODEL=/*MODEL*/null;
+const LAY={observado_sar_2019:{n:"Observado SAR 23/12/2019 (EMSR417)",c:"#d9480f",o:.6},
+ simulado_piloto_2019:{n:"Simulado piloto 23/12/2019 (não calibrado)",c:"#1971c2",o:.5},
+ dominio_piloto:{n:"Domínio do piloto (30 m)",c:"#868e96",o:.12}};
+const map=new maplibre.Map({container:"map",style:{version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap"}},layers:[{id:"osm",type:"raster",source:"osm"}]},center:[-8.43,40.2],zoom:11});
+map.addControl(new maplibre.NavigationControl());
+const lay=document.getElementById("layers");
+map.on("load",()=>{
+ Object.keys(LAY).forEach(k=>{const L=LAY[k];
+  map.addSource(k,{type:"geojson",data:{type:"FeatureCollection",features:DATA.features.filter(f=>f.properties.camada===k)}});
+  map.addLayer({id:k,type:"fill",source:k,paint:{"fill-color":L.c,"fill-opacity":L.o,"fill-outline-color":L.c}});
+  const r=document.createElement("label");r.className="row";r.innerHTML=`<input type="checkbox" checked><span class="sw" style="background:${L.c}"></span>${L.n}`;
+  r.firstChild.onchange=e=>map.setLayoutProperty(k,"visibility",e.target.checked?"visible":"none");lay.append(r);
+  map.on("click",k,e=>new maplibre.Popup().setLngLat(e.lngLat).setHTML(`<b>${L.n}</b><br>Natureza: ${e.features[0].properties.natureza}<br><b>${e.features[0].properties.estado}</b>`).addTo(map));});
+ if(MODEL){map.addSource("model",{type:"geojson",data:MODEL});map.addLayer({id:"model",type:"fill",source:"model",paint:{"fill-color":"#7048e8","fill-opacity":.5}});}
+ const b=new maplibre.LngLatBounds();DATA.features.forEach(f=>{const w=g=>Array.isArray(g[0])?g.forEach(w):b.extend(g);w(f.geometry.coordinates)});map.fitBounds(b,{padding:40,maxZoom:13});
+});
+const G=[["Eventos positivos independentes (≥ N a fixar)","1","no"],["Negativos observados fiáveis","0","no"],["Validação por evento/bacia","impossível (1 evento)","no"],["Baseline IAS e logística definidos","IAS existe; logística por fazer","na"],["Inventário de licenças","preliminar (sources.json)","na"],["Critérios de aceitação fixados antes do teste","por fazer","na"],["Modelo RF/XGBoost vs. baseline","não treinado","no"],["Aprovação do responsável","não","no"]];
+document.getElementById("gates").innerHTML="<tr><th>Critério</th><th>Estado</th></tr>"+G.map(g=>`<tr><td>${g[0]}</td><td class="${g[2]}">${g[1]}</td></tr>`).join("");
+document.getElementById("modelinfo").innerHTML=MODEL?"Camada de modelo carregada de <code>ai/outputs/model-score.geojson</code>. Ver relatório para métricas e calibração.":"Sem resultados: não existe modelo validado. Quando existir, <code>ai/outputs/model-score.geojson</code> é carregado aqui, com métricas, calibração e incerteza.";
+</script></body></html>

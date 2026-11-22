@@ -15,3 +15,12 @@ Não há código de treino. Só há inventário de dados, testes de guarda e um 
 
 ## Testes de guarda
 `python -m unittest discover -s ai/tests`
+
+## Ferramenta visual (independente do Floods)
+Painel de adequação com mapa: `ai/tool/floods-ai-viewer.html` (autónomo, dados embebidos; abrir localmente ou
+[pré-visualizar](https://htmlpreview.github.io/?https://github.com/dsantananet/ignispyro-floods/blob/feature/floods-ai-research/ai/tool/floods-ai-viewer.html) — serviço de terceiros, só para consulta).
+Mostra evidência observada vs. simulada, portão de decisão e, se existir, `ai/outputs/model-score.geojson`.
+Regenerar: `python ai/tool/build_tool.py`.
+
+Camada para ArcGIS Online: `ai/tool/layers/floods-ai-evidence.geojson` (Adicionar camada a partir de ficheiro; manter a marca experimental e não partilhar publicamente).
+Não há GitHub Pages nem alterações ao portal: a associação ao Floods só depois de o painel mostrar valor.

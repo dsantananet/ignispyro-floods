@@ -51,3 +51,25 @@ class Manifest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ViewerGuard(unittest.TestCase):
+    def test_layer_marked_experimental(self):
+        d = json.loads((ROOT / "ai/tool/layers/floods-ai-evidence.geojson").read_text(encoding="utf-8"))
+        self.assertTrue(d["features"])
+        for f in d["features"]:
+            self.assertIn("EXPERIMENTAL", f["properties"]["estado"])
+            self.assertIn(f["properties"]["natureza"], {"observado", "estimado", "modelo", "derivado"})
+
+    def test_viewer_marked_and_self_contained(self):
+        h = (ROOT / "ai/tool/floods-ai-viewer.html").read_text(encoding="utf-8")
+        self.assertIn("EXPERIMENTAL — NÃO OPERACIONAL", h)
+        self.assertNotIn("/*DATA*/", h)
+        self.assertNotRegex(h, r"(?i)qnap|asustor|tailscale")
+
+    def test_viewer_up_to_date(self):
+        import subprocess, sys, hashlib
+        p = ROOT / "ai/tool/floods-ai-viewer.html"
+        before = hashlib.sha256(p.read_bytes()).hexdigest()
+        subprocess.run([sys.executable, str(ROOT / "ai/tool/build_tool.py")], check=True, capture_output=True)
+        self.assertEqual(before, hashlib.sha256(p.read_bytes()).hexdigest(), "reexecutar ai/tool/build_tool.py")
